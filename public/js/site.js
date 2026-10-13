@@ -258,6 +258,82 @@
         });
     }
 
+    /* ---------- Copier le lien d'un article ---------- */
+    document.querySelectorAll('[data-copy]').forEach(function (button) {
+        button.addEventListener('click', function () {
+            var done = function () {
+                button.classList.add('is-copied');
+                button.innerHTML = '<i class="fas fa-check" aria-hidden="true"></i>';
+                button.setAttribute('aria-label', button.getAttribute('data-copied'));
+                setTimeout(function () {
+                    button.classList.remove('is-copied');
+                    button.innerHTML = '<i class="fas fa-link" aria-hidden="true"></i>';
+                }, 1800);
+            };
+            if (navigator.clipboard) navigator.clipboard.writeText(button.getAttribute('data-copy')).then(done);
+        });
+    });
+
+    /* ---------- Formulaires : bouton en état « envoi » ---------- */
+    document.querySelectorAll('form').forEach(function (f) {
+        if (f.hasAttribute('data-contact-form')) return; // déjà géré plus haut
+        f.addEventListener('submit', function () {
+            var button = f.querySelector('button[type="submit"][data-sending]');
+            if (button) {
+                button.disabled = true;
+                button.innerHTML = '<i class="fas fa-circle-notch fa-spin" aria-hidden="true"></i> ' + button.getAttribute('data-sending');
+            }
+        });
+    });
+
+    /* ---------- Mesure d'audience anonyme ---------- */
+    // Une page vue à l'arrivée, puis le temps réellement passé sur la page
+    // (onglet visible) envoyé au départ. Aucun cookie supplémentaire.
+    (function () {
+        var endpoint = document.body.getAttribute('data-track');
+        var token = document.querySelector('meta[name="csrf-token"]');
+        if (!endpoint || !token || !window.fetch) return;
+
+        var viewId = null;
+        var activeMs = 0;
+        var visibleSince = document.visibilityState === 'visible' ? Date.now() : null;
+        var form = function (fields) {
+            var data = new FormData();
+            data.append('_token', token.getAttribute('content'));
+            Object.keys(fields).forEach(function (k) { if (fields[k] != null) data.append(k, fields[k]); });
+            return data;
+        };
+        var timezone = null;
+        try { timezone = Intl.DateTimeFormat().resolvedOptions().timeZone; } catch (e) { /* ancien navigateur */ }
+
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Accept': 'application/json' },
+            credentials: 'same-origin',
+            body: form({
+                path: location.pathname,
+                title: document.title,
+                referrer: document.referrer || null,
+                timezone: timezone,
+                locale: document.documentElement.lang
+            })
+        }).then(function (r) { return r.status === 201 ? r.json() : null; })
+          .then(function (json) { if (json) viewId = json.id; })
+          .catch(function () { /* la mesure ne doit jamais gêner la navigation */ });
+
+        var flush = function () {
+            if (visibleSince) { activeMs += Date.now() - visibleSince; visibleSince = null; }
+            if (viewId && navigator.sendBeacon) {
+                navigator.sendBeacon(endpoint + '/' + viewId, form({ duration: Math.round(activeMs / 1000) }));
+            }
+        };
+        document.addEventListener('visibilitychange', function () {
+            if (document.visibilityState === 'hidden') flush();
+            else visibleSince = Date.now();
+        });
+        window.addEventListener('pagehide', flush);
+    })();
+
     var year = document.querySelector('[data-year]');
     if (year) year.textContent = new Date().getFullYear();
 })();

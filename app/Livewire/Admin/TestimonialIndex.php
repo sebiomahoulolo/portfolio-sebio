@@ -35,7 +35,35 @@ class TestimonialIndex extends Component
     #[Computed]
     public function testimonials()
     {
-        return Testimonial::orderBy('sort_order')->orderByDesc('given_at')->get();
+        // Les avis à valider en premier.
+        return Testimonial::orderByRaw("FIELD(status, 'pending', 'approved', 'rejected')")
+            ->orderBy('sort_order')
+            ->orderByDesc('given_at')
+            ->get();
+    }
+
+    public function approve(int $id): void
+    {
+        $testimonial = Testimonial::findOrFail($id);
+        $this->authorize('publish', $testimonial);
+
+        $testimonial->forceFill(['status' => 'approved', 'is_published' => true])->save();
+        ActivityLogger::log('testimonial.approved', 'Avis approuvé : '.$testimonial->author_name, $testimonial);
+
+        Flux::toast('Avis approuvé et publié.', variant: 'success');
+        unset($this->testimonials);
+    }
+
+    public function reject(int $id): void
+    {
+        $testimonial = Testimonial::findOrFail($id);
+        $this->authorize('publish', $testimonial);
+
+        $testimonial->forceFill(['status' => 'rejected', 'is_published' => false])->save();
+        ActivityLogger::log('testimonial.rejected', 'Avis refusé : '.$testimonial->author_name, $testimonial);
+
+        Flux::toast('Avis refusé : il ne sera pas publié.', variant: 'warning');
+        unset($this->testimonials);
     }
 
     public function create(): void
@@ -60,6 +88,7 @@ class TestimonialIndex extends Component
             'source' => $testimonial->source,
             'source_url' => (string) $testimonial->source_url,
             'given_at' => $testimonial->given_at?->format('Y-m-d'),
+            'rating' => $testimonial->rating,
             'is_published' => $testimonial->is_published,
             'sort_order' => $testimonial->sort_order,
         ];
@@ -77,6 +106,7 @@ class TestimonialIndex extends Component
             'form.source' => ['required', Rule::in(array_keys(Testimonial::SOURCES))],
             'form.source_url' => ['nullable', 'url:https', 'max:255'],
             'form.given_at' => ['nullable', 'date'],
+            'form.rating' => ['nullable', 'integer', 'between:1,5'],
             'form.is_published' => ['boolean'],
             'form.sort_order' => ['required', 'integer', 'min:0'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
@@ -97,7 +127,10 @@ class TestimonialIndex extends Component
             $data['avatar_path'] = $this->avatar->store('testimonials', config('portfolio.media_disk'));
         }
 
-        $testimonial->fill($data)->save();
+        $testimonial->fill($data);
+        // Un avis créé ou modifié ici par l'administrateur est validé d'office.
+        $testimonial->status = $data['is_published'] ? 'approved' : ($testimonial->status ?? 'approved');
+        $testimonial->save();
         ActivityLogger::log('testimonial.saved', 'Recommandation enregistrée : '.$testimonial->author_name, $testimonial);
 
         Flux::modal('testimonial-form')->close();
@@ -127,7 +160,7 @@ class TestimonialIndex extends Component
         $locales = array_fill_keys(array_keys(config('portfolio.locales')), '');
         $this->form = [
             'author_name' => '', 'author_title' => $locales, 'quote' => $locales,
-            'source' => 'linkedin', 'source_url' => '', 'given_at' => now()->format('Y-m-d'),
+            'source' => 'linkedin', 'source_url' => '', 'given_at' => now()->format('Y-m-d'), 'rating' => null,
             'is_published' => true, 'sort_order' => (int) Testimonial::max('sort_order') + 1,
         ];
     }

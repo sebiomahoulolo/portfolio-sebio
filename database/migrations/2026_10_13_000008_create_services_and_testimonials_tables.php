@@ -28,9 +28,14 @@ return new class extends Migration
             $table->string('author_name', 120);
             $table->json('author_title')->nullable(); // traduit — fonction et entreprise
             $table->json('quote');                   // traduit
-            $table->string('source', 40)->default('linkedin'); // linkedin, client, other
+            $table->string('source', 40)->default('linkedin'); // linkedin, client, site, other
             $table->string('source_url')->nullable();
             $table->string('avatar_path')->nullable();
+            $table->string('email', 190)->nullable();          // privé : avis déposés depuis le site
+            $table->unsignedTinyInteger('rating')->nullable(); // 1 à 5
+            // Modération : un avis déposé sur le site reste « pending » jusqu'à validation.
+            $table->string('status', 20)->default('approved')->index(); // pending, approved, rejected
+            $table->string('ip_hash', 64)->nullable();
             $table->date('given_at')->nullable();
             $table->boolean('is_published')->default(true)->index();
             $table->unsignedInteger('sort_order')->default(0);

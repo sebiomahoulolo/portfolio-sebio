@@ -6,6 +6,7 @@ use App\Models\Certification;
 use App\Models\ContactMessage;
 use App\Models\Education;
 use App\Models\Experience;
+use App\Models\Post;
 use App\Models\ProfileSetting;
 use App\Models\Project;
 use App\Models\Service;
@@ -37,6 +38,7 @@ class AppServiceProvider extends ServiceProvider
             'project' => Project::class,
             'technology' => Technology::class,
             'service' => Service::class,
+            'post' => Post::class,
             'testimonial' => Testimonial::class,
             'experience' => Experience::class,
             'education' => Education::class,
@@ -60,15 +62,15 @@ class AppServiceProvider extends ServiceProvider
             return $user->isOwner() ? true : null;
         });
 
-        foreach ([Project::class, Technology::class, Service::class, Testimonial::class, Experience::class, Education::class, Certification::class] as $model) {
+        foreach ([Project::class, Post::class, Technology::class, Service::class, Testimonial::class, Experience::class, Education::class, Certification::class] as $model) {
             Gate::policy($model, ContentPolicy::class);
         }
 
         Gate::define('access-admin', fn (User $user) => $user->is_active);
 
         // Réservé au propriétaire : données personnelles des contacts,
-        // profil public et journal d'activité.
-        foreach (['manage-contacts', 'manage-settings', 'view-activity'] as $ability) {
+        // profil public, statistiques d'audience et journal d'activité.
+        foreach (['manage-contacts', 'manage-settings', 'view-analytics', 'view-activity'] as $ability) {
             Gate::define($ability, fn (User $user) => false);
         }
     }
@@ -78,5 +80,9 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('contact', function (Request $request) {
             return Limit::perHour(config('portfolio.contact_rate_limit'))->by($request->ip());
         });
+
+        RateLimiter::for('reviews', fn (Request $request) => Limit::perHour(3)->by($request->ip()));
+
+        RateLimiter::for('analytics', fn (Request $request) => Limit::perMinute(120)->by($request->ip()));
     }
 }

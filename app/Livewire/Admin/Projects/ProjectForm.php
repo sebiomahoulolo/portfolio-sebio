@@ -25,7 +25,7 @@ class ProjectForm extends Component
 {
     use WithFileUploads;
 
-    private const TRANSLATED = ['title', 'excerpt', 'description', 'role', 'cover_alt', 'seo_title', 'seo_description'];
+    private const TRANSLATED = ['title', 'excerpt', 'description', 'context', 'challenge', 'solution', 'results', 'role', 'cover_alt', 'seo_title', 'seo_description'];
 
     private const IMAGE_RULES = ['image', 'mimes:jpg,jpeg,png,webp', 'max:4096', 'dimensions:max_width=4000,max_height=4000'];
 
@@ -45,6 +45,9 @@ class ProjectForm extends Component
 
     public bool $slugTouched = false;
 
+    /** @var list<array{value: string, label: array<string, string>}> chiffres clés de l'étude de cas */
+    public array $metrics = [];
+
     public function mount(?Project $project = null): void
     {
         $locales = array_fill_keys(array_keys(config('portfolio.locales')), '');
@@ -63,6 +66,9 @@ class ProjectForm extends Component
             $this->form['status'] = $project->status->value;
             $this->form['published_at'] = $project->published_at?->format('Y-m-d\TH:i');
             $this->technologyIds = $project->technologies()->pluck('technologies.id')->all();
+            $this->metrics = collect($project->metrics ?? [])
+                ->map(fn ($m) => ['value' => (string) ($m['value'] ?? ''), 'label' => array_merge($locales, $m['label'] ?? [])])
+                ->values()->all();
         } else {
             $this->authorize('create', Project::class);
 
@@ -142,9 +148,13 @@ class ProjectForm extends Component
             'cover' => ['nullable', ...self::IMAGE_RULES],
             'gallery' => ['array', 'max:12'],
             'gallery.*' => self::IMAGE_RULES,
+            'metrics' => ['array', 'max:6'],
+            'metrics.*.value' => ['nullable', 'string', 'max:20'],
+            'metrics.*.label.*' => ['nullable', 'string', 'max:80'],
         ];
 
-        $limits = ['title' => [160, true], 'excerpt' => [300], 'description' => [20000], 'role' => [300], 'cover_alt' => [160], 'seo_title' => [70], 'seo_description' => [160]];
+        $limits = ['title' => [160, true], 'excerpt' => [300], 'description' => [20000], 'role' => [300],
+            'context' => [5000], 'challenge' => [5000], 'solution' => [8000], 'results' => [5000], 'cover_alt' => [160], 'seo_title' => [70], 'seo_description' => [160]];
 
         foreach ($limits as $field => $args) {
             foreach ($translated(...$args) as $pattern => $fieldRules) {
@@ -186,6 +196,11 @@ class ProjectForm extends Component
         $data['sort_order'] ??= 0;
         $data['is_featured'] = (bool) $this->form['is_featured'];
         $data['is_indexable'] = (bool) $this->form['is_indexable'];
+        $data['metrics'] = collect($this->metrics)
+            ->filter(fn ($m) => filled($m['value'] ?? null))
+            ->map(fn ($m) => ['value' => trim($m['value']), 'label' => array_filter($m['label'] ?? [], fn ($v) => filled($v))])
+            ->values()
+            ->all() ?: null;
 
         $wasPublished = $project->exists && $project->status === PublicationStatus::Published;
         $requestedStatus = PublicationStatus::from($this->form['status']);
@@ -255,6 +270,19 @@ class ProjectForm extends Component
         }
 
         Flux::toast('Projet enregistré.', variant: 'success');
+    }
+
+    public function addMetric(): void
+    {
+        if (count($this->metrics) < 6) {
+            $this->metrics[] = ['value' => '', 'label' => array_fill_keys(array_keys(config('portfolio.locales')), '')];
+        }
+    }
+
+    public function removeMetric(int $index): void
+    {
+        unset($this->metrics[$index]);
+        $this->metrics = array_values($this->metrics);
     }
 
     public function removeCover(): void

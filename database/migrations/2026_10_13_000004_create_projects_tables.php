@@ -13,7 +13,13 @@ return new class extends Migration
             $table->json('title');                 // traduit
             $table->string('slug', 160)->unique();
             $table->json('excerpt')->nullable();   // traduit — résumé de la carte
-            $table->json('description')->nullable(); // traduit — étude de cas
+            $table->json('description')->nullable(); // traduit — présentation générale
+            // Étude de cas structurée (traduite) : contexte, problème, solution, résultats.
+            $table->json('context')->nullable();
+            $table->json('challenge')->nullable();
+            $table->json('solution')->nullable();
+            $table->json('results')->nullable();
+            $table->json('metrics')->nullable(); // [{ value: "3 000+", label: { fr, en } }]
             $table->json('role')->nullable();      // traduit — mon rôle sur le projet
             $table->string('category', 80)->nullable()->index();
             $table->string('client', 120)->nullable();

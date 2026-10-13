@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Certification;
 use App\Models\Education;
 use App\Models\Experience;
+use App\Models\Post;
 use App\Models\ProfileSetting;
 use App\Models\Project;
 use App\Models\Service;
@@ -34,6 +35,7 @@ class HomeController extends Controller
             'publishedCount' => Project::published()->count(),
             'services' => Service::published()->orderBy('sort_order')->get(),
             'testimonials' => Testimonial::published()->orderBy('sort_order')->get(),
+            'posts' => Post::published()->latest('published_at')->limit(3)->get(),
             'skills' => Technology::where('show_in_skills', true)->orderBy('sort_order')->get()->groupBy('category'),
             'stack' => Technology::where('show_in_skills', true)->orderBy('category')->orderBy('sort_order')->get(['name', 'icon']),
             'experiences' => $experiences,

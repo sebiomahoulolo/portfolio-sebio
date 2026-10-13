@@ -39,9 +39,39 @@
                 <flux:heading>Description et étude de cas</flux:heading>
                 <x-admin.translated-field model="form.excerpt" label="Résumé" type="textarea" :rows="2"
                     description="Affiché sur la carte du projet. 20 à 300 caractères." />
-                <x-admin.translated-field model="form.description" label="Étude de cas" type="textarea" :rows="10"
+                <x-admin.translated-field model="form.description" label="Présentation générale" type="textarea" :rows="6"
                     description="Contexte, problème, solution, résultats. Une ligne vide sépare les paragraphes ; « ## » en début de ligne crée un intertitre." />
                 <x-admin.translated-field model="form.role" label="Mon rôle" type="textarea" :rows="2" />
+            </flux:card>
+
+            {{-- Étude de cas structurée --}}
+            <flux:card class="flex flex-col gap-5">
+                <div>
+                    <flux:heading>Étude de cas</flux:heading>
+                    <flux:text class="mt-1 text-sm">Ce qui convainc un client : le contexte, le problème, votre solution et des résultats mesurables. Chaque section vide est masquée sur le site.</flux:text>
+                </div>
+                <x-admin.translated-field model="form.context" label="Contexte" type="textarea" :rows="3" description="Le client, son activité, la situation de départ." />
+                <x-admin.translated-field model="form.challenge" label="Problème" type="textarea" :rows="3" description="Ce qui ne fonctionnait pas ou ce qu'il fallait construire." />
+                <x-admin.translated-field model="form.solution" label="Solution" type="textarea" :rows="5" description="Votre démarche et les choix techniques. Listes avec « - »." />
+                <x-admin.translated-field model="form.results" label="Résultats" type="textarea" :rows="3" description="Ce qui a changé pour le client, avec des chiffres réels si possible." />
+
+                <flux:separator />
+
+                <div class="flex items-center justify-between">
+                    <flux:label>Chiffres clés</flux:label>
+                    <flux:button size="sm" icon="plus" wire:click="addMetric" :disabled="count($metrics) >= 6">Ajouter un chiffre</flux:button>
+                </div>
+                @forelse ($metrics as $i => $metric)
+                    <div wire:key="metric-{{ $i }}" class="grid items-end gap-3 sm:grid-cols-[120px_1fr_1fr_auto]">
+                        <flux:input wire:model="metrics.{{ $i }}.value" label="Valeur" placeholder="3 000+" />
+                        @foreach (config('portfolio.locales') as $code => $name)
+                            <flux:input wire:model="metrics.{{ $i }}.label.{{ $code }}" :label="'Libellé '.strtoupper($code)" :placeholder="$code === 'fr' ? 'candidats inscrits' : 'registered candidates'" />
+                        @endforeach
+                        <flux:button variant="ghost" icon="trash" wire:click="removeMetric({{ $i }})" aria-label="Retirer" />
+                    </div>
+                @empty
+                    <flux:text class="text-sm">Aucun chiffre. Exemples : « 3 000+ utilisateurs », « -40 % de temps de traitement », « 99,9 % de disponibilité ».</flux:text>
+                @endforelse
             </flux:card>
 
             {{-- 3. Technologies --}}

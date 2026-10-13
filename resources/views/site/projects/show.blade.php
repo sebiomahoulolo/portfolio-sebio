@@ -68,6 +68,45 @@
         </div>
     </section>
 
+    @if ($project->hasCaseStudy() || $project->metricsFor())
+        <section class="section" id="etude-de-cas">
+            <div class="container">
+                <div class="section-head reveal">
+                    <div>
+                        <span class="eyebrow">{{ __('Étude de cas') }}</span>
+                        <h2>{{ __('Du problème à la solution.') }}</h2>
+                    </div>
+                </div>
+                <div class="bento">
+                    @foreach ($project->metricsFor() as $metric)
+                        <div @class(['tile metric-tile reveal', 'tile-copper' => $loop->first, 'tile-dark' => $loop->index === 1]) style="--delay: {{ $loop->index * 0.06 }}s">
+                            <strong>{{ $metric['value'] }}</strong>
+                            <span>{{ $metric['label'] }}</span>
+                        </div>
+                    @endforeach
+
+                    @php
+                        $sectionIcons = ['context' => 'fa-compass', 'challenge' => 'fa-triangle-exclamation', 'solution' => 'fa-screwdriver-wrench', 'results' => 'fa-chart-line'];
+                        // Sections renseignées ; si leur nombre est impair, la dernière prend toute la largeur.
+                        $sections = collect(App\Models\Project::CASE_STUDY_SECTIONS)->filter(fn ($label, $key) => filled($project->translate($key)));
+                    @endphp
+                    @foreach ($sections as $key => $label)
+                        <div @class([
+                            'tile case-section reveal',
+                            'span-2' => ! ($loop->last && $sections->count() % 2),
+                            'span-4' => $loop->last && $sections->count() % 2,
+                            'tile-dark' => $key === 'solution',
+                        ]) style="--delay: {{ ($loop->index % 2) * 0.06 }}s">
+                            <span class="step-number"><i class="fas {{ $sectionIcons[$key] }}" aria-hidden="true"></i></span>
+                            <h2>{{ __($label) }}</h2>
+                            <x-site.rich-text :text="$project->translate($key)" />
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     <section class="section">
         <div class="container bento">
             @if ($hasCaseStudy)

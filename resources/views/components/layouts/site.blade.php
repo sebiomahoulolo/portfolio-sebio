@@ -13,7 +13,7 @@
     $initials = Str::of($profile->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('');
     $siteTitle = $title ?? ($profile->translate('seo_title') ?: $profile->name.' — '.$profile->translate('headline'));
     $metaDescription = Str::limit(strip_tags($description ?? ($profile->translate('seo_description') ?: $profile->translate('intro'))), 160);
-    $shareImage = $image ?? ($profile->og_image_path ? $profile->mediaUrl($profile->og_image_path) : asset('images/about/3.jpg'));
+    $shareImage = $image ?? ($profile->og_image_path ? $profile->mediaUrl($profile->og_image_path) : $profile->photoUrl());
     $canonicalUrl = alternate_url($locale);
     $home = request()->routeIs('home', 'en.home');
     $anchor = fn (string $id) => $home ? '#'.$id : lroute('home').'#'.$id;
@@ -25,6 +25,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     {{-- Thème appliqué avant l'affichage pour éviter un flash de couleur. --}}
     <script>
         (function () {
@@ -66,7 +67,7 @@
 
     {{ $head ?? '' }}
 </head>
-<body>
+<body data-track="{{ route('analytics.store') }}">
     <a href="#main" class="skip-link">{{ __('Aller au contenu') }}</a>
 
     <header class="site-header">
@@ -82,6 +83,7 @@
                 <a href="{{ $anchor('a-propos') }}" data-section="a-propos">{{ __('À propos') }}</a>
                 <a href="{{ lroute('services.index') }}" data-section="services" @class(['is-active' => $is('services.*')])>{{ __('Services') }}</a>
                 <a href="{{ lroute('projects.index') }}" data-section="projets" @class(['is-active' => $is('projects.*')])>{{ __('Projets') }}</a>
+                <a href="{{ lroute('blog.index') }}" data-section="blog" @class(['is-active' => $is('blog.*')])>{{ __('Blog') }}</a>
                 <a href="{{ $anchor('parcours') }}" data-section="parcours">{{ __('Parcours') }}</a>
                 <a href="{{ $anchor('contact') }}" class="btn btn-primary btn-sm" data-magnetic>{{ __('Me contacter') }}</a>
             </nav>
@@ -112,10 +114,21 @@
     <footer class="site-footer">
         <div class="container">
             <div class="footer-inner">
-                <span>© <span data-year>{{ date('Y') }}</span> {{ $profile->name }} · {{ $profile->location }}</span>
+                <div class="footer-meta">
+                    <span>© <span data-year>{{ date('Y') }}</span> {{ $profile->name }} · {{ $profile->location }}</span>
+                    @php $visitorCount = \App\Models\PageView::publicVisitorCount(); @endphp
+                    @if ($visitorCount > 0)
+                        <span class="visitor-count" title="{{ __('Statistiques anonymes, sans cookie publicitaire') }}">
+                            <i class="fas fa-eye" aria-hidden="true"></i>
+                            {{ trans_choice(':count visiteur|:count visiteurs', $visitorCount, ['count' => number_format($visitorCount, 0, ',', ' ')]) }}
+                        </span>
+                    @endif
+                </div>
                 <nav class="footer-nav" aria-label="{{ __('Pied de page') }}">
                     <a href="{{ lroute('services.index') }}">{{ __('Services') }}</a>
                     <a href="{{ lroute('projects.index') }}">{{ __('Projets') }}</a>
+                    <a href="{{ lroute('blog.index') }}">{{ __('Blog') }}</a>
+                    <a href="{{ lroute('reviews.create') }}">{{ __('Donner mon avis') }}</a>
                     <a href="{{ $anchor('parcours') }}">{{ __('Parcours') }}</a>
                     <a href="{{ $anchor('contact') }}">{{ __('Contact') }}</a>
                     <a href="{{ route('cv') }}" target="_blank" rel="noopener">{{ __('CV') }}</a>

@@ -1,10 +1,13 @@
 <?php
 
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Middleware\EnsureUserIsActive;
@@ -27,12 +30,20 @@ $publicRoutes = function (array $paths) {
     Route::get($paths['projects'].'/{slug}', [ProjectController::class, 'show'])->name('projects.show');
     Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
     Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('services.show');
+    Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
+    Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
+    Route::get($paths['review'], [ReviewController::class, 'create'])->name('reviews.create');
 };
 
-Route::middleware('locale:fr')->group(fn () => $publicRoutes(['projects' => '/projets']));
-Route::prefix('en')->name('en.')->middleware('locale:en')->group(fn () => $publicRoutes(['projects' => '/projects']));
+Route::middleware('locale:fr')->group(fn () => $publicRoutes(['projects' => '/projets', 'review' => '/donner-mon-avis']));
+Route::prefix('en')->name('en.')->middleware('locale:en')->group(fn () => $publicRoutes(['projects' => '/projects', 'review' => '/leave-a-review']));
 
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
+Route::post('/avis', [ReviewController::class, 'store'])->middleware('throttle:reviews')->name('reviews.store');
+
+// Mesure d'audience anonyme (page vue, puis durée passée sur la page).
+Route::post('/t', [AnalyticsController::class, 'store'])->middleware('throttle:analytics')->name('analytics.store');
+Route::post('/t/{uuid}', [AnalyticsController::class, 'duration'])->whereUuid('uuid')->middleware('throttle:analytics')->name('analytics.duration');
 // « /cv » est déjà un dossier de public/ (ancien CV) : la route utilise une autre adresse.
 Route::get('/telecharger-cv', CvController::class)->name('cv');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
@@ -74,6 +85,12 @@ Route::prefix('admin')
         Route::get('/services', Admin\Services\ServiceIndex::class)->name('services.index');
         Route::get('/services/nouveau', Admin\Services\ServiceForm::class)->name('services.create');
         Route::get('/services/{service}', Admin\Services\ServiceForm::class)->name('services.edit');
+
+        Route::get('/statistiques', Admin\Analytics::class)->name('analytics');
+
+        Route::get('/blog', Admin\Posts\PostIndex::class)->name('posts.index');
+        Route::get('/blog/nouveau', Admin\Posts\PostForm::class)->name('posts.create');
+        Route::get('/blog/{post}', Admin\Posts\PostForm::class)->name('posts.edit');
 
         Route::get('/parcours', Admin\CareerIndex::class)->name('career.index');
         Route::get('/recommandations', Admin\TestimonialIndex::class)->name('testimonials.index');

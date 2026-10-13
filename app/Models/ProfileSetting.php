@@ -80,6 +80,16 @@ class ProfileSetting extends Model
         return ($this->social_links ?? [])[$network] ?? null;
     }
 
+    /**
+     * Photo de profil : celle téléversée dans l'administration, sinon le portrait fourni avec le site.
+     */
+    public function photoUrl(): string
+    {
+        return $this->avatar_path
+            ? $this->mediaUrl($this->avatar_path)
+            : asset('images/profile/mahoulolo-sebio.jpg');
+    }
+
     public function mediaUrl(?string $path): ?string
     {
         return $path ? Storage::disk(config('portfolio.media_disk'))->url($path) : null;

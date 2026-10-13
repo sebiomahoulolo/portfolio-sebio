@@ -1,25 +1,31 @@
 @props(['title' => null])
 
 @php
+    // [route, icône Heroicons, libellé, autorisation requise]
     $nav = [
-        'Contenu' => [
-            ['admin.dashboard', 'home', 'Tableau de bord', null],
-            ['admin.profile.edit', 'user-circle', 'Profil public', 'manage-settings'],
-            ['admin.projects.index', 'rectangle-stack', 'Projets', null],
-            ['admin.services.index', 'sparkles', 'Services', null],
-            ['admin.technologies.index', 'cpu-chip', 'Technologies', null],
-            ['admin.career.index', 'briefcase', 'Parcours', null],
-            ['admin.testimonials.index', 'chat-bubble-left-right', 'Recommandations', null],
+        'Pilotage' => [
+            ['admin.dashboard', 'squares-2x2', 'Tableau de bord', null],
+            ['admin.analytics', 'chart-bar', 'Statistiques', 'view-analytics'],
         ],
-        'Contacts' => [
-            ['admin.messages.index', 'inbox', 'Messages', 'manage-contacts'],
+        'Contenu' => [
+            ['admin.profile.edit', 'identification', 'Profil public', 'manage-settings'],
+            ['admin.projects.index', 'folder', 'Projets', null],
+            ['admin.services.index', 'wrench-screwdriver', 'Services', null],
+            ['admin.posts.index', 'newspaper', 'Blog', null],
+            ['admin.technologies.index', 'code-bracket', 'Technologies', null],
+            ['admin.career.index', 'academic-cap', 'Parcours', null],
+        ],
+        'Relation client' => [
+            ['admin.messages.index', 'envelope', 'Messages', 'manage-contacts'],
+            ['admin.testimonials.index', 'star', 'Avis et recommandations', null],
             ['admin.activity', 'clipboard-document-list', "Journal d'activité", 'view-activity'],
         ],
     ];
 
-    $unreadMessages = Gate::allows('manage-contacts')
-        ? \App\Models\ContactMessage::where('status', 'new')->count()
-        : 0;
+    $badges = [
+        'admin.messages.index' => Gate::allows('manage-contacts') ? \App\Models\ContactMessage::where('status', 'new')->count() : 0,
+        'admin.testimonials.index' => \App\Models\Testimonial::where('status', 'pending')->count(),
+    ];
 @endphp
 
 <!DOCTYPE html>
@@ -36,13 +42,14 @@
     @fluxAppearance
 </head>
 <body class="min-h-screen bg-white dark:bg-zinc-800 antialiased">
-    <flux:sidebar sticky collapsible="mobile" class="border-e border-zinc-200 bg-paper dark:border-zinc-700 dark:bg-ink">
+    {{-- « collapsible » : le menu se replie aussi sur ordinateur (icônes seules, infobulles). --}}
+    <flux:sidebar sticky collapsible class="border-e border-zinc-200 bg-paper dark:border-zinc-700 dark:bg-ink">
         <flux:sidebar.header>
             <a href="{{ route('admin.dashboard') }}" wire:navigate class="flex items-center gap-2 font-semibold text-ink dark:text-paper">
-                <span class="flex size-8 items-center justify-center rounded-md bg-copper text-sm font-bold text-ink">MS</span>
-                <span>Portfolio</span>
+                <span class="flex size-8 shrink-0 items-center justify-center rounded-md bg-copper text-sm font-bold text-white">MS</span>
+                <span class="in-data-flux-sidebar-collapsed-desktop:hidden">Portfolio</span>
             </a>
-            <flux:sidebar.collapse class="lg:hidden" />
+            <flux:sidebar.collapse tooltip="Replier / déplier le menu" />
         </flux:sidebar.header>
 
         <flux:sidebar.nav>
@@ -52,17 +59,20 @@
                 @endphp
 
                 @if ($visible->isNotEmpty())
-                    <flux:sidebar.group :heading="$group" class="grid">
-                        @foreach ($visible as [$route, $icon, $label])
-                            <flux:sidebar.item
-                                :icon="$icon"
-                                :href="route($route)"
-                                :current="request()->routeIs(substr_count($route, '.') > 1 ? Str::beforeLast($route, '.').'.*' : $route)"
-                                :badge="$route === 'admin.messages.index' && $unreadMessages ? $unreadMessages : null"
-                                wire:navigate
-                            >{{ $label }}</flux:sidebar.item>
-                        @endforeach
-                    </flux:sidebar.group>
+                    {{-- Pas de flux:sidebar.group : Flux masque les groupes quand le menu est replié,
+                         alors que les icônes doivent rester visibles. --}}
+                    <div class="px-3 pt-4 pb-1 text-xs font-medium uppercase tracking-wide text-zinc-400 first:pt-0 in-data-flux-sidebar-collapsed-desktop:hidden">{{ $group }}</div>
+                    <div class="hidden h-px bg-zinc-200 first:hidden in-data-flux-sidebar-collapsed-desktop:my-2 in-data-flux-sidebar-collapsed-desktop:block dark:bg-zinc-700"></div>
+                    @foreach ($visible as [$route, $icon, $label])
+                        <flux:sidebar.item
+                            :icon="$icon"
+                            :href="route($route)"
+                            :current="request()->routeIs(substr_count($route, '.') > 1 ? Str::beforeLast($route, '.').'.*' : $route)"
+                            :badge="($badges[$route] ?? 0) ?: null"
+                            :tooltip="$label"
+                            wire:navigate
+                        >{{ $label }}</flux:sidebar.item>
+                    @endforeach
                 @endif
             @endforeach
         </flux:sidebar.nav>
@@ -70,7 +80,7 @@
         <flux:sidebar.spacer />
 
         <flux:sidebar.nav>
-            <flux:sidebar.item icon="globe-alt" :href="route('home')" target="_blank">Voir le site</flux:sidebar.item>
+            <flux:sidebar.item icon="globe-europe-africa" :href="route('home')" target="_blank" tooltip="Voir le site">Voir le site</flux:sidebar.item>
         </flux:sidebar.nav>
 
         <flux:dropdown position="top" align="start" class="max-lg:hidden">

@@ -31,7 +31,13 @@ trait HasTranslations
             $value = $values[$default] ?? null;
         }
 
-        return blank($value) ? null : $value;
+        // Dernier recours : n'importe quelle langue renseignée (ex. un avis
+        // déposé en anglais affiché sur la version française).
+        if (blank($value)) {
+            $value = collect($values)->first(fn ($v) => filled($v) && is_string($v));
+        }
+
+        return blank($value) || ! is_string($value) ? null : $value;
     }
 
     public function hasTranslation(string $locale, ?string $field = null): bool

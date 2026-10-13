@@ -1,5 +1,5 @@
 @php
-    $photo = $profile->avatar_path ? $profile->mediaUrl($profile->avatar_path) : asset('images/about/3.jpg');
+    $photo = $profile->photoUrl();
     $skillIcons = ['frontend' => 'fas fa-laptop-code', 'backend' => 'fas fa-server', 'tools' => 'fas fa-screwdriver-wrench', 'other' => 'fas fa-cubes'];
     $period = fn ($date) => $date ? Str::ucfirst($date->translatedFormat('M Y')) : null;
 
@@ -66,7 +66,14 @@
             </div>
 
             <div class="tile photo-tile row-2 reveal is-visible" style="--delay: .08s">
-                <img src="{{ $photo }}" alt="{{ __('Portrait de :name', ['name' => $profile->name]) }}" width="810" height="1080" fetchpriority="high">
+                <div class="portrait">
+                    <span class="portrait-orbit" aria-hidden="true"></span>
+                    <img src="{{ $photo }}" alt="{{ __('Portrait de :name', ['name' => $profile->name]) }}" width="800" height="800" fetchpriority="high">
+                </div>
+                <div class="portrait-id">
+                    <strong>{{ $profile->name }}</strong>
+                    <span>{{ $profile->translate('subtitle') }}</span>
+                </div>
                 @if ($profile->translate('current_position'))
                     <div class="photo-badge">
                         <i class="fas fa-briefcase" aria-hidden="true"></i>
@@ -328,23 +335,52 @@
         </div>
     </section>
 
-    {{-- ===================== Recommandations ===================== --}}
-    @if ($testimonials->isNotEmpty())
-        <section class="section" id="recommandations">
-            <div class="container">
-                <div class="section-head reveal">
-                    <div>
-                        <span class="eyebrow">{{ __('Recommandations') }}</span>
-                        <h2>{{ __('Ils parlent de mon travail.') }}</h2>
-                    </div>
+    {{-- ===================== Recommandations et avis ===================== --}}
+    <section class="section" id="recommandations">
+        <div class="container">
+            <div class="section-head reveal">
+                <div>
+                    <span class="eyebrow">{{ __('Recommandations') }}</span>
+                    <h2>{{ __('Ils parlent de mon travail.') }}</h2>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 10px;">
                     @if ($profile->social('linkedin'))
                         <a href="{{ $profile->social('linkedin') }}" class="btn btn-ghost" target="_blank" rel="noopener"><i class="fab fa-linkedin" aria-hidden="true"></i> {{ __('Voir sur LinkedIn') }}</a>
                     @endif
+                    <a href="{{ lroute('reviews.create') }}" class="btn btn-primary" data-magnetic><i class="fas fa-star" aria-hidden="true"></i> {{ __('Donner mon avis') }}</a>
+                </div>
+            </div>
+            <div class="bento">
+                @foreach ($testimonials->take(4) as $testimonial)
+                    <x-site.testimonial-card :testimonial="$testimonial" :dark="$loop->first" :delay="($loop->index % 2) * 0.08" />
+                @endforeach
+                <a href="{{ lroute('reviews.create') }}" @class(['tile tile-copper stat reveal', $testimonials->take(4)->count() % 2 ? 'span-2' : 'span-4']) style="min-height: 0;">
+                    <i class="fas fa-star watermark" aria-hidden="true"></i>
+                    <span class="tile-label"><i class="fas fa-comment-dots" aria-hidden="true"></i> {{ __('Votre avis') }}</span>
+                    <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+                    <div>
+                        <h3 style="font-size: 1.4rem;">{{ __('Vous avez travaillé avec moi ?') }}</h3>
+                        <p style="margin-top: 8px;">{{ __('Partagez votre expérience en une minute. Votre avis sera publié après validation.') }}</p>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    {{-- ===================== Blog ===================== --}}
+    @if ($posts->isNotEmpty())
+        <section class="section" id="blog">
+            <div class="container">
+                <div class="section-head reveal">
+                    <div>
+                        <span class="eyebrow">{{ __('Blog') }}</span>
+                        <h2>{{ __('Notes de terrain sur Laravel, la sécurité et le SaaS.') }}</h2>
+                    </div>
+                    <a href="{{ lroute('blog.index') }}" class="btn btn-ghost">{{ __('Tous les articles') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
                 </div>
                 <div class="bento">
-                    @foreach ($testimonials as $testimonial)
-                        <x-site.testimonial-card :testimonial="$testimonial" :dark="$loop->first"
-                            :span="$testimonials->count() === 1 ? 4 : 2" :delay="($loop->index % 2) * 0.08" />
+                    @foreach ($posts as $post)
+                        <x-site.post-card :post="$post" :wide="$loop->first" :dark="$loop->first" :delay="$loop->index * 0.06" />
                     @endforeach
                 </div>
             </div>
