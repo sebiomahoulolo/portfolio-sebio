@@ -1,0 +1,43 @@
+@import 'tailwindcss';
+@import '../../vendor/livewire/flux/dist/flux.css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+@source '../views/admin/**/*.blade.php';
+@source '../views/auth/**/*.blade.php';
+@source '../views/components/**/*.blade.php';
+@source '../views/livewire/**/*.blade.php';
+@source '../../app/**/*.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/*
+ * Charte du cahier des charges : noir profond, blanc cassé,
+ * orange cuivré pour les accents, gris neutre pour les textes secondaires.
+ */
+@theme {
+    --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+
+    --color-ink: #111111;
+    --color-paper: #F5F3EF;
+    --color-copper: #D97745;
+    --color-copper-dark: #B85F31;
+    --color-neutral-text: #6B7280;
+
+    /* Couleur d'accent utilisée par Flux (boutons primaires, liens actifs...). */
+    --color-accent: #B85F31;
+    --color-accent-content: #B85F31;
+    --color-accent-foreground: #FFFFFF;
+}
+
+@layer theme {
+    .dark {
+        --color-accent: #D97745;
+        --color-accent-content: #E69A70;
+        --color-accent-foreground: #111111;
+    }
+}
+
+[x-cloak] {
+    display: none !important;
+}

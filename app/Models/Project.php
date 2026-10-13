@@ -1,0 +1,86 @@
+<?php
+
+namespace App\Models;
+
+use App\Models\Concerns\HasPublication;
+use App\Models\Concerns\HasTranslations;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
+
+class Project extends Model
+{
+    use HasFactory, HasPublication, HasTranslations, SoftDeletes;
+
+    protected array $translatable = [
+        'title', 'excerpt', 'description', 'role', 'cover_alt', 'seo_title', 'seo_description',
+    ];
+
+    protected $attributes = ['status' => 'draft'];
+
+    protected $fillable = [
+        'title', 'slug', 'excerpt', 'description', 'role', 'category', 'client', 'period',
+        'status', 'is_featured', 'sort_order', 'cover_image', 'cover_alt',
+        'demo_url', 'repository_url', 'seo_title', 'seo_description', 'is_indexable', 'published_at',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'is_featured' => 'boolean',
+            'is_indexable' => 'boolean',
+            'sort_order' => 'integer',
+            'views_count' => 'integer',
+        ];
+    }
+
+    public function images(): HasMany
+    {
+        return $this->hasMany(ProjectImage::class)->orderBy('sort_order');
+    }
+
+    public function technologies(): BelongsToMany
+    {
+        return $this->belongsToMany(Technology::class)
+            ->withTimestamps()
+            ->orderBy('sort_order');
+    }
+
+    public function getRouteKeyName(): string
+    {
+        return 'slug';
+    }
+
+    public function coverUrl(): ?string
+    {
+        return $this->cover_image
+            ? Storage::disk(config('portfolio.media_disk'))->url($this->cover_image)
+            : null;
+    }
+
+    /**
+     * Un projet ne peut être publié que si ses informations essentielles
+     * sont renseignées dans la langue par défaut.
+     *
+     * @return list<string> champs manquants
+     */
+    public function missingFieldsForPublication(): array
+    {
+        $missing = [];
+
+        if (blank($this->translate('title', 'fr'))) {
+            $missing[] = 'titre';
+        }
+        if (blank($this->slug)) {
+            $missing[] = 'slug';
+        }
+        if (mb_strlen((string) $this->translate('excerpt', 'fr')) < 20) {
+            $missing[] = 'résumé (20 caractères minimum)';
+        }
+
+        return $missing;
+    }
+}

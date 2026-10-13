@@ -1,0 +1,56 @@
+<?php
+
+return [
+    'accepted' => 'Le champ :attribute doit être accepté.',
+    'alpha_dash' => 'Le champ :attribute ne peut contenir que des lettres, chiffres, tirets et underscores.',
+    'array' => 'Le champ :attribute doit être une liste.',
+    'between' => [
+        'numeric' => 'Le champ :attribute doit être compris entre :min et :max.',
+        'string' => 'Le champ :attribute doit contenir entre :min et :max caractères.',
+    ],
+    'boolean' => 'Le champ :attribute doit être vrai ou faux.',
+    'confirmed' => 'La confirmation du champ :attribute ne correspond pas.',
+    'current_password' => 'Le mot de passe actuel est incorrect.',
+    'date' => 'Le champ :attribute doit être une date valide.',
+    'dimensions' => "Les dimensions de l'image :attribute sont trop grandes.",
+    'email' => 'Le champ :attribute doit être une adresse email valide.',
+    'exists' => 'La valeur sélectionnée pour :attribute est invalide.',
+    'file' => 'Le champ :attribute doit être un fichier.',
+    'image' => 'Le champ :attribute doit être une image.',
+    'in' => 'La valeur sélectionnée pour :attribute est invalide.',
+    'integer' => 'Le champ :attribute doit être un nombre entier.',
+    'max' => [
+        'array' => 'Le champ :attribute ne peut pas contenir plus de :max éléments.',
+        'file' => 'Le fichier :attribute ne doit pas dépasser :max Ko.',
+        'numeric' => 'Le champ :attribute ne doit pas dépasser :max.',
+        'string' => 'Le champ :attribute ne doit pas dépasser :max caractères.',
+    ],
+    'mimes' => 'Le fichier :attribute doit être de type : :values.',
+    'mimetypes' => 'Le fichier :attribute doit être de type : :values.',
+    'min' => [
+        'numeric' => 'Le champ :attribute doit être au moins :min.',
+        'string' => 'Le champ :attribute doit contenir au moins :min caractères.',
+    ],
+    'numeric' => 'Le champ :attribute doit être un nombre.',
+    'password' => [
+        'letters' => 'Le mot de passe doit contenir au moins une lettre.',
+        'mixed' => 'Le mot de passe doit contenir au moins une majuscule et une minuscule.',
+        'numbers' => 'Le mot de passe doit contenir au moins un chiffre.',
+        'symbols' => 'Le mot de passe doit contenir au moins un symbole.',
+        'uncompromised' => 'Ce mot de passe apparaît dans une fuite de données. Choisissez-en un autre.',
+    ],
+    'present' => 'Le champ :attribute doit être présent.',
+    'regex' => 'Le format du champ :attribute est invalide.',
+    'required' => 'Le champ :attribute est obligatoire.',
+    'string' => 'Le champ :attribute doit être un texte.',
+    'unique' => 'Cette valeur de :attribute est déjà utilisée.',
+    'uploaded' => "Le fichier :attribute n'a pas pu être téléversé.",
+    'url' => 'Le champ :attribute doit être une adresse valide (https://...).',
+
+    'attributes' => [
+        'email' => 'adresse email',
+        'password' => 'mot de passe',
+        'current_password' => 'mot de passe actuel',
+        'name' => 'nom',
+    ],
+];

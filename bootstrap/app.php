@@ -11,7 +11,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Hostinger place le site derrière son CDN (hcdn) : on fait confiance
+        // aux en-têtes X-Forwarded-* pour détecter correctement HTTPS et l'IP.
+        $middleware->trustProxies(at: '*');
+
+        $middleware->redirectGuestsTo(fn () => route('login'));
+        $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
