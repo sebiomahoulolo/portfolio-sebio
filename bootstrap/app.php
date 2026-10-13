@@ -15,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
         // aux en-têtes X-Forwarded-* pour détecter correctement HTTPS et l'IP.
         $middleware->trustProxies(at: '*');
 
+        $middleware->alias(['locale' => \App\Http\Middleware\SetLocale::class]);
+
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));
     })

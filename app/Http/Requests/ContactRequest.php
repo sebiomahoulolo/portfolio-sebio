@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 
 class ContactRequest extends FormRequest
 {
+    /** Libellés en français : ils sont enregistrés tels quels et traduits à l'affichage. */
     public const BUDGETS = [
         'moins-500k' => 'Moins de 500 000 FCFA',
         '500k-1500k' => '500 000 à 1 500 000 FCFA',
@@ -23,6 +24,18 @@ class ContactRequest extends FormRequest
         return true;
     }
 
+    /**
+     * Les messages d'erreur et de confirmation suivent la langue de la page d'origine.
+     */
+    protected function prepareForValidation(): void
+    {
+        $locale = (string) $this->input('locale');
+
+        if (array_key_exists($locale, config('portfolio.locales'))) {
+            app()->setLocale($locale);
+        }
+    }
+
     public function rules(): array
     {
         return [
@@ -34,7 +47,8 @@ class ContactRequest extends FormRequest
             'subject' => ['required', 'string', 'min:3', 'max:190'],
             'budget' => ['nullable', Rule::in(array_keys(self::BUDGETS))],
             'message' => ['required', 'string', 'min:20', 'max:5000'],
-            // Pièges à robots : champ invisible qui doit rester vide.
+            'locale' => ['nullable', Rule::in(array_keys(config('portfolio.locales')))],
+            // Piège à robots : champ invisible qui doit rester vide.
             'website' => ['present', 'max:0'],
         ];
     }
@@ -42,21 +56,21 @@ class ContactRequest extends FormRequest
     public function attributes(): array
     {
         return [
-            'name' => 'nom',
-            'email' => 'adresse email',
-            'phone' => 'téléphone',
-            'company' => 'entreprise',
-            'subject' => 'sujet',
-            'message' => 'message',
+            'name' => __('nom'),
+            'email' => __('adresse email'),
+            'phone' => __('téléphone'),
+            'company' => __('entreprise'),
+            'subject' => __('sujet'),
+            'message' => __('message'),
         ];
     }
 
     public function messages(): array
     {
         return [
-            'website.max' => 'Votre message n\'a pas pu être envoyé.',
-            'website.present' => 'Votre message n\'a pas pu être envoyé.',
-            'message.min' => 'Décrivez votre besoin en quelques phrases (20 caractères minimum).',
+            'website.max' => __('Votre message n\'a pas pu être envoyé.'),
+            'website.present' => __('Votre message n\'a pas pu être envoyé.'),
+            'message.min' => __('Décrivez votre besoin en quelques phrases (20 caractères minimum).'),
         ];
     }
 

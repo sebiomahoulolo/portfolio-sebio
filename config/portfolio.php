@@ -9,6 +9,7 @@ return [
     */
     'locales' => [
         'fr' => 'Français',
+        'en' => 'English',
     ],
 
     'default_locale' => 'fr',

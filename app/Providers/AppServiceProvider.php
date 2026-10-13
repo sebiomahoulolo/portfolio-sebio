@@ -8,7 +8,9 @@ use App\Models\Education;
 use App\Models\Experience;
 use App\Models\ProfileSetting;
 use App\Models\Project;
+use App\Models\Service;
 use App\Models\Technology;
+use App\Models\Testimonial;
 use App\Models\User;
 use App\Policies\ContentPolicy;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -34,6 +36,8 @@ class AppServiceProvider extends ServiceProvider
             'user' => User::class,
             'project' => Project::class,
             'technology' => Technology::class,
+            'service' => Service::class,
+            'testimonial' => Testimonial::class,
             'experience' => Experience::class,
             'education' => Education::class,
             'certification' => Certification::class,
@@ -56,7 +60,7 @@ class AppServiceProvider extends ServiceProvider
             return $user->isOwner() ? true : null;
         });
 
-        foreach ([Project::class, Technology::class, Experience::class, Education::class, Certification::class] as $model) {
+        foreach ([Project::class, Technology::class, Service::class, Testimonial::class, Experience::class, Education::class, Certification::class] as $model) {
             Gate::policy($model, ContentPolicy::class);
         }
 

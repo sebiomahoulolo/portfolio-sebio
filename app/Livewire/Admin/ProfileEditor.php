@@ -18,7 +18,7 @@ class ProfileEditor extends Component
 {
     use WithFileUploads;
 
-    private const TRANSLATED = ['headline', 'subtitle', 'intro', 'about', 'objective', 'current_position', 'featured_project', 'seo_title', 'seo_description'];
+    private const TRANSLATED = ['headline', 'subtitle', 'tagline', 'intro', 'about', 'objective', 'current_position', 'featured_project', 'seo_title', 'seo_description'];
 
     private const SOCIAL = ['linkedin' => 'LinkedIn', 'github' => 'GitHub', 'facebook' => 'Facebook', 'x' => 'X (Twitter)'];
 
@@ -28,7 +28,11 @@ class ProfileEditor extends Component
     /** @var array<string, string> */
     public array $social = [];
 
-    public string $interests = '';
+    /** @var array<string, string> liste séparée par des virgules, par langue */
+    public array $interests = [];
+
+    /** @var array<string, string> badges d'expertise, séparés par des virgules, par langue */
+    public array $expertise = [];
 
     public string $languages = '';
 
@@ -45,7 +49,7 @@ class ProfileEditor extends Component
         $profile = ProfileSetting::current();
         $locales = array_fill_keys(array_keys(config('portfolio.locales')), '');
 
-        $this->form = $profile->only(['name', 'featured_project_url', 'email', 'phone', 'whatsapp', 'location', 'is_available']);
+        $this->form = $profile->only(['name', 'featured_project_url', 'email', 'phone', 'whatsapp', 'location', 'is_available', 'years_experience']);
         $this->form['is_available'] = (bool) ($this->form['is_available'] ?? true);
         foreach (self::TRANSLATED as $field) {
             $this->form[$field] = array_merge($locales, $profile->{$field} ?? []);
@@ -55,7 +59,10 @@ class ProfileEditor extends Component
             $this->social[$network] = (string) $profile->social($network);
         }
 
-        $this->interests = implode(', ', $profile->interestsFor('fr'));
+        foreach (array_keys($locales) as $code) {
+            $this->interests[$code] = implode(', ', ($profile->interests ?? [])[$code] ?? []);
+            $this->expertise[$code] = implode(', ', ($profile->expertise ?? [])[$code] ?? []);
+        }
         $this->languages = collect($profile->spoken_languages ?? [])
             ->map(fn ($l) => $l['name'].' : '.$l['level'])
             ->implode("\n");
@@ -74,7 +81,10 @@ class ProfileEditor extends Component
             'form.location' => ['nullable', 'string', 'max:120'],
             'form.is_available' => ['boolean'],
             'social.*' => ['nullable', 'url:https', 'max:255'],
-            'interests' => ['nullable', 'string', 'max:500'],
+            'interests.*' => ['nullable', 'string', 'max:500'],
+            'expertise.*' => ['nullable', 'string', 'max:500'],
+            'form.years_experience' => ['nullable', 'integer', 'between:0,60'],
+            'form.tagline.*' => ['nullable', 'string', 'max:160'],
             'languages' => ['nullable', 'string', 'max:500'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'cv' => ['nullable', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:5120'],
@@ -101,7 +111,12 @@ class ProfileEditor extends Component
             ->all();
         $data['is_available'] = (bool) $this->form['is_available'];
         $data['social_links'] = array_filter($this->social, fn ($v) => filled($v));
-        $data['interests'] = ['fr' => collect(explode(',', $this->interests))->map(fn ($i) => trim($i))->filter()->values()->all()];
+        $toList = fn (array $byLocale) => collect($byLocale)
+            ->map(fn ($text) => collect(explode(',', (string) $text))->map(fn ($i) => trim($i))->filter()->values()->all())
+            ->filter()
+            ->all();
+        $data['interests'] = $toList($this->interests);
+        $data['expertise'] = $toList($this->expertise);
         $data['spoken_languages'] = collect(preg_split('/\R/', $this->languages))
             ->map(fn ($line) => array_map('trim', explode(':', $line, 2)))
             ->filter(fn ($parts) => filled($parts[0]))

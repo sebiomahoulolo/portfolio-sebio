@@ -11,7 +11,10 @@
                 <flux:heading>Présentation</flux:heading>
                 <flux:input wire:model="form.name" label="Nom affiché" required />
                 <x-admin.translated-field model="form.headline" label="Titre professionnel" required />
-                <x-admin.translated-field model="form.subtitle" label="Sous-titre" />
+                <x-admin.translated-field model="form.subtitle" label="Sous-titre" description="Ex. « Fondateur & CEO d'AfriCode »." />
+                <x-admin.translated-field model="form.tagline" label="Accroche principale"
+                    description="Grand titre de l'accueil. Deux phrases : la seconde s'affiche en couleur (ex. « Je bâtis des SaaS sécurisés. Je forme les devs de demain. »)." />
+                <x-admin.translated-field model="expertise" label="Badges d'expertise" description="Séparés par des virgules (ex. Laravel, SaaS multi-tenant, SSO & RBAC)." />
                 <x-admin.translated-field model="form.intro" label="Accroche (en-tête du site)" type="textarea" :rows="4" />
                 <x-admin.translated-field model="form.about" label="À propos" type="textarea" :rows="6" />
                 <x-admin.translated-field model="form.objective" label="Mission" type="textarea" :rows="3" />
@@ -27,7 +30,7 @@
             <flux:card class="flex flex-col gap-5">
                 <flux:heading>Langues et centres d'intérêt</flux:heading>
                 <flux:textarea wire:model="languages" label="Langues parlées" rows="4" description="Une langue par ligne, au format « Langue : niveau »." />
-                <flux:input wire:model="interests" label="Centres d'intérêt" description="Séparés par des virgules." />
+                <x-admin.translated-field model="interests" label="Centres d'intérêt" description="Séparés par des virgules." />
             </flux:card>
 
             <flux:card class="flex flex-col gap-5">
@@ -75,6 +78,8 @@
                     @endif
                 </div>
                 <flux:switch wire:model="form.is_available" label="Disponible pour de nouveaux projets" align="left" />
+                <flux:input wire:model="form.years_experience" type="number" min="0" max="60" label="Années d'expérience affichées"
+                    description="Vide : calculé automatiquement depuis le parcours." />
             </flux:card>
 
             <flux:card class="flex flex-col gap-5">

@@ -17,6 +17,9 @@ return new class extends Migration
             $table->string('name');
             $table->json('headline');            // traduit — ex. « Développeur Full Stack »
             $table->json('subtitle')->nullable(); // traduit
+            $table->json('tagline')->nullable();  // traduit — accroche courte, ex. « Je bâtis des SaaS sécurisés. »
+            $table->json('expertise')->nullable(); // traduit — { fr: [...], en: [...] } badges d'expertise
+            $table->unsignedTinyInteger('years_experience')->nullable(); // vide : calculé depuis le parcours
             $table->json('intro')->nullable();    // traduit — texte du hero
             $table->json('about')->nullable();    // traduit — « Qui suis-je ? »
             $table->json('objective')->nullable(); // traduit

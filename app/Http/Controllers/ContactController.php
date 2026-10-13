@@ -15,7 +15,7 @@ class ContactController extends Controller
 {
     public function store(ContactRequest $request): RedirectResponse
     {
-        $data = $request->safe()->except('website');
+        $data = $request->safe()->except(['website', 'locale']);
 
         if ($data['type'] !== 'quote') {
             $data['budget'] = null;
@@ -39,6 +39,8 @@ class ContactController extends Controller
         }
 
         return redirect()->to(url()->previous().'#contact')
-            ->with('contact_sent', 'Merci '.Str::before($message->name, ' ').' ! Votre message a bien été reçu. Je vous réponds sous 48 heures ouvrées.');
+            ->with('contact_sent', __('Merci :name ! Votre message a bien été reçu. Je vous réponds sous 48 heures ouvrées.', [
+                'name' => Str::before($message->name, ' '),
+            ]));
     }
 }

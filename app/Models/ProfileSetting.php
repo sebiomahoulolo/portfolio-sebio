@@ -14,12 +14,13 @@ class ProfileSetting extends Model
     use HasTranslations;
 
     protected array $translatable = [
-        'headline', 'subtitle', 'intro', 'about', 'objective', 'current_position',
+        'headline', 'subtitle', 'tagline', 'expertise', 'intro', 'about', 'objective', 'current_position',
         'featured_project', 'interests', 'seo_title', 'seo_description',
     ];
 
     protected $fillable = [
-        'name', 'headline', 'subtitle', 'intro', 'about', 'objective', 'current_position',
+        'name', 'headline', 'subtitle', 'tagline', 'expertise', 'years_experience',
+        'intro', 'about', 'objective', 'current_position',
         'featured_project', 'featured_project_url', 'email', 'phone', 'whatsapp', 'location',
         'avatar_path', 'cv_path', 'social_links', 'spoken_languages', 'interests',
         'is_available', 'seo_title', 'seo_description', 'og_image_path',
@@ -31,7 +32,29 @@ class ProfileSetting extends Model
             'social_links' => 'array',
             'spoken_languages' => 'array',
             'is_available' => 'boolean',
+            'years_experience' => 'integer',
         ];
+    }
+
+    /**
+     * Badges d'expertise dans la langue demandée.
+     *
+     * @return list<string>
+     */
+    public function expertiseFor(?string $locale = null): array
+    {
+        return $this->listFor('expertise', $locale);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function listFor(string $field, ?string $locale): array
+    {
+        $values = $this->getAttribute($field) ?? [];
+        $locale ??= app()->getLocale();
+
+        return $values[$locale] ?? $values[config('portfolio.default_locale')] ?? [];
     }
 
     public static function current(): self
@@ -49,10 +72,7 @@ class ProfileSetting extends Model
      */
     public function interestsFor(?string $locale = null): array
     {
-        $values = $this->interests ?? [];
-        $locale ??= app()->getLocale();
-
-        return $values[$locale] ?? $values[config('portfolio.default_locale')] ?? [];
+        return $this->listFor('interests', $locale);
     }
 
     public function social(string $network): ?string

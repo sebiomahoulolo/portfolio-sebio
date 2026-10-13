@@ -7,7 +7,9 @@ use App\Models\Education;
 use App\Models\Experience;
 use App\Models\ProfileSetting;
 use App\Models\Project;
+use App\Models\Service;
 use App\Models\Technology;
+use App\Models\Testimonial;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -30,12 +32,15 @@ class HomeController extends Controller
             'profile' => $profile,
             'projects' => $projects,
             'publishedCount' => Project::published()->count(),
+            'services' => Service::published()->orderBy('sort_order')->get(),
+            'testimonials' => Testimonial::published()->orderBy('sort_order')->get(),
             'skills' => Technology::where('show_in_skills', true)->orderBy('sort_order')->get()->groupBy('category'),
             'stack' => Technology::where('show_in_skills', true)->orderBy('category')->orderBy('sort_order')->get(['name', 'icon']),
             'experiences' => $experiences,
             'educations' => Education::visible()->orderBy('sort_order')->get(),
             'certifications' => Certification::visible()->orderByDesc('issued_at')->get(),
-            'yearsOfExperience' => $firstStart ? max(1, (int) now()->diffInYears($firstStart, true)) : null,
+            'yearsOfExperience' => $profile->years_experience
+                ?: ($firstStart ? max(1, (int) now()->diffInYears($firstStart, true)) : null),
         ]);
     }
 }

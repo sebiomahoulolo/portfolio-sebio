@@ -5,6 +5,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ServiceController;
 use App\Http\Controllers\SitemapController;
 use App\Http\Middleware\EnsureUserIsActive;
 use App\Livewire\Admin;
@@ -18,9 +19,19 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-Route::get('/', HomeController::class)->name('home');
-Route::get('/projets', [ProjectController::class, 'index'])->name('projects.index');
-Route::get('/projets/{slug}', [ProjectController::class, 'show'])->name('projects.show');
+// Les mêmes pages existent en français (sans préfixe) et en anglais (/en),
+// avec des adresses traduites. Les liens se génèrent avec lroute().
+$publicRoutes = function (array $paths) {
+    Route::get('/', HomeController::class)->name('home');
+    Route::get($paths['projects'], [ProjectController::class, 'index'])->name('projects.index');
+    Route::get($paths['projects'].'/{slug}', [ProjectController::class, 'show'])->name('projects.show');
+    Route::get('/services', [ServiceController::class, 'index'])->name('services.index');
+    Route::get('/services/{slug}', [ServiceController::class, 'show'])->name('services.show');
+};
+
+Route::middleware('locale:fr')->group(fn () => $publicRoutes(['projects' => '/projets']));
+Route::prefix('en')->name('en.')->middleware('locale:en')->group(fn () => $publicRoutes(['projects' => '/projects']));
+
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 // « /cv » est déjà un dossier de public/ (ancien CV) : la route utilise une autre adresse.
 Route::get('/telecharger-cv', CvController::class)->name('cv');
@@ -59,6 +70,13 @@ Route::prefix('admin')
         Route::get('/projets/{project}', Admin\Projects\ProjectForm::class)->name('projects.edit');
 
         Route::get('/technologies', Admin\Technologies\TechnologyIndex::class)->name('technologies.index');
+
+        Route::get('/services', Admin\Services\ServiceIndex::class)->name('services.index');
+        Route::get('/services/nouveau', Admin\Services\ServiceForm::class)->name('services.create');
+        Route::get('/services/{service}', Admin\Services\ServiceForm::class)->name('services.edit');
+
+        Route::get('/parcours', Admin\CareerIndex::class)->name('career.index');
+        Route::get('/recommandations', Admin\TestimonialIndex::class)->name('testimonials.index');
 
         Route::get('/messages', Admin\Messages\MessageIndex::class)->name('messages.index');
         Route::get('/messages/{message}', Admin\Messages\MessageShow::class)->name('messages.show');

@@ -6,7 +6,10 @@
             ['admin.dashboard', 'home', 'Tableau de bord', null],
             ['admin.profile.edit', 'user-circle', 'Profil public', 'manage-settings'],
             ['admin.projects.index', 'rectangle-stack', 'Projets', null],
+            ['admin.services.index', 'sparkles', 'Services', null],
             ['admin.technologies.index', 'cpu-chip', 'Technologies', null],
+            ['admin.career.index', 'briefcase', 'Parcours', null],
+            ['admin.testimonials.index', 'chat-bubble-left-right', 'Recommandations', null],
         ],
         'Contacts' => [
             ['admin.messages.index', 'inbox', 'Messages', 'manage-contacts'],
@@ -28,6 +31,7 @@
     <title>{{ $title ? $title.' · ' : '' }}Administration</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">
     @vite(['resources/css/admin.css', 'resources/js/admin.js'])
     @fluxAppearance
 </head>
