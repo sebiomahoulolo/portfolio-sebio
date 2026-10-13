@@ -12,7 +12,7 @@
         <div @class(['tile step reveal', 'tile-dark' => $index === 3]) style="--delay: {{ $index * 0.07 }}s">
             <div style="display: flex; justify-content: space-between; align-items: center;">
                 <span class="step-number">0{{ $index + 1 }}</span>
-                <span class="service-icon" style="width: 42px; height: 42px; font-size: 1rem;"><i class="{{ $icon }}" aria-hidden="true"></i></span>
+                <span class="service-icon"><i class="{{ $icon }}" aria-hidden="true"></i></span>
             </div>
             <h3>{{ $title }}</h3>
             <p>{{ $text }}</p>

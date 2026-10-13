@@ -99,13 +99,50 @@
                     <i class="fas fa-sun" aria-hidden="true"></i>
                     <i class="fas fa-moon" aria-hidden="true"></i>
                 </button>
-                <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="{{ __('Menu') }}">
-                    <i class="fas fa-bars" aria-hidden="true"></i>
+                <button class="nav-toggle" type="button" aria-controls="mobile-menu" aria-expanded="false" aria-label="{{ __('Ouvrir le menu') }}">
+                    <span class="burger" aria-hidden="true"><span></span><span></span><span></span></span>
                 </button>
             </div>
             <span class="nav-progress" aria-hidden="true"></span>
         </div>
     </header>
+
+    {{-- Menu mobile : panneau qui glisse depuis la droite. --}}
+    <div class="mobile-menu" id="mobile-menu" role="dialog" aria-modal="true" aria-label="{{ __('Menu') }}" inert>
+        <div class="mobile-menu-backdrop" data-menu-close></div>
+        <div class="mobile-menu-panel">
+            <div class="mobile-menu-head">
+                <span class="tile-label"><i class="fas fa-compass" aria-hidden="true"></i> {{ __('Menu') }}</span>
+                <button type="button" class="mobile-menu-close" data-menu-close aria-label="{{ __('Fermer le menu') }}">
+                    <i class="fas fa-xmark" aria-hidden="true"></i>
+                </button>
+            </div>
+
+            <nav class="mobile-menu-links" aria-label="{{ __('Navigation principale') }}">
+                @foreach ([
+                    [$anchor('a-propos'), __('À propos'), false],
+                    [lroute('services.index'), __('Services'), $is('services.*')],
+                    [lroute('projects.index'), __('Projets'), $is('projects.*')],
+                    [lroute('blog.index'), __('Blog'), $is('blog.*')],
+                    [$anchor('parcours'), __('Parcours'), false],
+                ] as [$href, $label, $active])
+                    <a href="{{ $href }}" style="--i: {{ $loop->index }}" @class(['is-active' => $active]) @if ($active) aria-current="page" @endif>
+                        <small>{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</small>
+                        <span>{{ $label }}</span>
+                        <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                    </a>
+                @endforeach
+            </nav>
+
+            <div class="mobile-menu-foot" style="--i: 5">
+                <a href="{{ $anchor('contact') }}" class="btn btn-accent">{{ __('Me contacter') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
+                @if ($profile->email)
+                    <a href="mailto:{{ $profile->email }}" class="mobile-menu-mail"><i class="far fa-envelope" aria-hidden="true"></i> {{ $profile->email }}</a>
+                @endif
+                <x-site.socials :profile="$profile" />
+            </div>
+        </div>
+    </div>
 
     <main id="main">
         {{ $slot }}
@@ -117,21 +154,16 @@
                 <div class="footer-meta">
                     <span>© <span data-year>{{ date('Y') }}</span> {{ $profile->name }} · {{ $profile->location }}</span>
                     @php $visitorCount = \App\Models\PageView::publicVisitorCount(); @endphp
-                    @if ($visitorCount > 0)
-                        <span class="visitor-count" title="{{ __('Statistiques anonymes, sans cookie publicitaire') }}">
-                            <i class="fas fa-eye" aria-hidden="true"></i>
-                            {{ trans_choice(':count visiteur|:count visiteurs', $visitorCount, ['count' => number_format($visitorCount, 0, ',', ' ')]) }}
-                        </span>
-                    @endif
+                    <span class="visitor-count" title="{{ __('Statistiques anonymes, sans cookie publicitaire') }}">
+                        <i class="fas fa-eye" aria-hidden="true"></i>
+                        {{ trans_choice(':count visiteur|:count visiteurs', $visitorCount, ['count' => number_format($visitorCount, 0, ',', ' ')]) }}
+                    </span>
                 </div>
                 <nav class="footer-nav" aria-label="{{ __('Pied de page') }}">
                     <a href="{{ lroute('services.index') }}">{{ __('Services') }}</a>
                     <a href="{{ lroute('projects.index') }}">{{ __('Projets') }}</a>
                     <a href="{{ lroute('blog.index') }}">{{ __('Blog') }}</a>
-                    <a href="{{ lroute('reviews.create') }}">{{ __('Donner mon avis') }}</a>
-                    <a href="{{ $anchor('parcours') }}">{{ __('Parcours') }}</a>
                     <a href="{{ $anchor('contact') }}">{{ __('Contact') }}</a>
-                    <a href="{{ route('cv') }}" target="_blank" rel="noopener">{{ __('CV') }}</a>
                 </nav>
                 <x-site.socials :profile="$profile" />
             </div>

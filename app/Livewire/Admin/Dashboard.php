@@ -6,6 +6,7 @@ use App\Enums\MessageStatus;
 use App\Enums\PublicationStatus;
 use App\Models\ActivityLog;
 use App\Models\ContactMessage;
+use App\Models\PageView;
 use App\Models\Project;
 use App\Models\Technology;
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +27,11 @@ class Dashboard extends Component
             'draftProjects' => Project::where('status', PublicationStatus::Draft)->count(),
             'technologies' => Technology::count(),
             'projectViews' => (int) Project::sum('views_count'),
+            'projectViewsDetail' => Project::orderByDesc('views_count')->orderBy('sort_order')->get(),
+            'totalVisitors' => PageView::publicVisitorCount(),
+            'visitorsToday' => PageView::where('created_at', '>=', now()->startOfDay())->distinct()->count('visitor_hash'),
+            'onlineNow' => PageView::where('created_at', '>=', now()->subMinutes(5))->distinct()->count('session_hash'),
+            'canSeeAnalytics' => Gate::allows('view-analytics'),
             'canSeeContacts' => $canSeeContacts,
             'newMessages' => $canSeeContacts ? ContactMessage::where('status', MessageStatus::New)->count() : 0,
             'latestMessages' => $canSeeContacts ? ContactMessage::latest()->limit(5)->get() : collect(),

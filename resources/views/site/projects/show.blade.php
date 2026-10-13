@@ -74,7 +74,7 @@
                 <div class="section-head reveal">
                     <div>
                         <span class="eyebrow">{{ __('Étude de cas') }}</span>
-                        <h2>{{ __('Du problème à la solution.') }}</h2>
+                        <h2>{{ __('Le contexte, le défi, ce que j’ai construit.') }}</h2>
                     </div>
                 </div>
                 <div class="bento">
@@ -137,7 +137,7 @@
                 <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Un projet similaire ?') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-                <h3 style="font-size: 1.4rem;">{{ __('Découvrez mes services') }}</h3>
+                <h3>{{ __('Découvrez mes services') }}</h3>
             </a>
 
             @foreach ($project->images as $image)

@@ -7,14 +7,51 @@
         </x-slot:actions>
     </x-admin.page-header>
 
-    <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <x-admin.stat-card label="Projets publiés" :value="$publishedProjects" :hint="$draftProjects.' brouillon(s)'" :href="route('admin.projects.index')" />
-        <x-admin.stat-card label="Consultations de projets" :value="number_format($projectViews, 0, ',', ' ')" hint="Pages détail /projets" />
-        <x-admin.stat-card label="Technologies" :value="$technologies" :href="route('admin.technologies.index')" />
+    <div @class(['grid gap-4 sm:grid-cols-2', 'xl:grid-cols-5' => $canSeeContacts, 'xl:grid-cols-4' => ! $canSeeContacts])>
+        <x-admin.stat-card label="Visiteurs" icon="users" :value="number_format($totalVisitors, 0, ',', ' ')"
+            :hint="$visitorsToday.' aujourd’hui · '.$onlineNow.' en ligne'" :href="$canSeeAnalytics ? route('admin.analytics') : null" />
+        <x-admin.stat-card label="Consultations de projets" icon="eye" :value="number_format($projectViews, 0, ',', ' ')" hint="Pages détail des projets" modal="project-views" />
+        <x-admin.stat-card label="Projets publiés" icon="briefcase" :value="$publishedProjects" :hint="$draftProjects.' brouillon(s)'" :href="route('admin.projects.index')" />
+        <x-admin.stat-card label="Technologies" icon="code-bracket" :value="$technologies" :href="route('admin.technologies.index')" />
         @if ($canSeeContacts)
-            <x-admin.stat-card label="Nouveaux messages" :value="$newMessages" :href="route('admin.messages.index')" />
+            <x-admin.stat-card label="Nouveaux messages" icon="envelope" :value="$newMessages" :href="route('admin.messages.index')" />
         @endif
     </div>
+
+    {{-- Détail des consultations, projet par projet. --}}
+    <flux:modal name="project-views" class="w-full max-w-xl">
+        <div class="flex flex-col gap-5">
+            <div>
+                <flux:heading size="lg">Consultations par projet</flux:heading>
+                <flux:text class="mt-1">Nombre d’ouvertures de la page détail de chaque projet depuis sa mise en ligne.</flux:text>
+            </div>
+            @php $maxViews = max(1, (int) $projectViewsDetail->max('views_count')); @endphp
+            <ul class="flex flex-col gap-4">
+                @forelse ($projectViewsDetail as $project)
+                    <li class="flex flex-col gap-1.5">
+                        <div class="flex items-center justify-between gap-3 text-sm">
+                            <a href="{{ route('admin.projects.edit', $project) }}" wire:navigate class="truncate font-medium text-ink hover:text-copper-dark dark:text-paper">{{ $project->translate('title') }}</a>
+                            <div class="flex shrink-0 items-center gap-3">
+                                <span class="font-semibold tabular-nums text-ink dark:text-paper">{{ number_format($project->views_count, 0, ',', ' ') }}</span>
+                                @if ($project->isPubliclyVisible())
+                                    <a href="{{ lroute('projects.show', ['slug' => $project->slug], 'fr') }}" target="_blank" class="text-zinc-400 hover:text-copper-dark" title="Voir la page publique">
+                                        <flux:icon name="arrow-top-right-on-square" class="size-4" />
+                                    </a>
+                                @else
+                                    <x-admin.status-badge :status="$project->status" />
+                                @endif
+                            </div>
+                        </div>
+                        <div class="h-1.5 overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-700">
+                            <div class="h-full rounded-full bg-copper" style="width: {{ round($project->views_count / $maxViews * 100) }}%"></div>
+                        </div>
+                    </li>
+                @empty
+                    <flux:text>Aucun projet.</flux:text>
+                @endforelse
+            </ul>
+        </div>
+    </flux:modal>
 
     <div class="grid gap-6 lg:grid-cols-2">
         @if ($canSeeContacts)

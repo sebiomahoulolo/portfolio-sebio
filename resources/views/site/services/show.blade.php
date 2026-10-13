@@ -64,11 +64,11 @@
                     </ul>
                 </div>
             @endif
-            <a href="#contact" class="tile tile-dark stat span-2 reveal" style="--delay: .12s; min-height: 0;">
+            <a href="#contact" class="tile tile-dark stat span-2 reveal is-compact" style="--delay: .12s">
                 <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Prochaine étape') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-                <h3 style="font-size: 1.4rem;">{{ __('Parlons de votre projet : premier échange gratuit et sans engagement.') }}</h3>
+                <h3>{{ __('Parlons de votre projet : premier échange gratuit et sans engagement.') }}</h3>
             </a>
         </div>
     </section>

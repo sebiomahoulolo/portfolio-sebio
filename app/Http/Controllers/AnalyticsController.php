@@ -7,6 +7,7 @@ use App\Support\VisitorContext;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 /**
@@ -32,9 +33,12 @@ class AnalyticsController extends Controller
             'locale' => ['nullable', 'string', 'max:5'],
         ]);
 
+        $visitorHash = $context->visitorHash();
+        $isNewVisitor = ! PageView::where('visitor_hash', $visitorHash)->exists();
+
         $view = PageView::create([
             'uuid' => (string) Str::uuid(),
-            'visitor_hash' => $context->visitorHash(),
+            'visitor_hash' => $visitorHash,
             'session_hash' => $context->sessionHash(),
             'path' => $data['path'],
             'title' => isset($data['title']) ? Str::limit($data['title'], 185, '') : null,
@@ -45,6 +49,11 @@ class AnalyticsController extends Controller
             'browser' => $context->browser(),
             'os' => $context->os(),
         ]);
+
+        // Le compteur public se met à jour dès l'arrivée d'un nouveau visiteur.
+        if ($isNewVisitor) {
+            Cache::forget('analytics.public-visitors');
+        }
 
         return response()->json(['id' => $view->uuid], 201);
     }

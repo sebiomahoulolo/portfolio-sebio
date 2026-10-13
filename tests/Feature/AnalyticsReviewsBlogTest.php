@@ -11,8 +11,11 @@ use App\Models\Project;
 use App\Models\Testimonial;
 use App\Models\User;
 use App\Notifications\NewReview;
+use App\Livewire\Admin\Posts\PostForm;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -180,6 +183,44 @@ class AnalyticsReviewsBlogTest extends TestCase
             ->assertSee('class="code-block"', false)
             ->assertSee('&lt;script&gt;', false)
             ->assertDontSee('<script>alert(1)</script>', false);
+    }
+
+    public function test_articles_can_show_images_and_videos_but_not_unsafe_links(): void
+    {
+        $body = implode("\n\n", [
+            '![Tableau de bord](/storage/posts/media/2026/10/capture.webp)',
+            '![](/storage/posts/media/2026/10/demo.mp4)',
+            'https://www.youtube.com/watch?v=dQw4w9WgXcQ',
+            '![piège](javascript:alert(1))',
+        ]);
+        $post = Post::create(['slug' => 'medias', 'title' => ['fr' => 'Médias'], 'body' => ['fr' => $body], 'published_at' => now()->subDay()]);
+        $post->forceFill(['status' => PublicationStatus::Published])->save();
+
+        $this->get('/blog/medias')
+            ->assertSee('<img src="/storage/posts/media/2026/10/capture.webp" alt="Tableau de bord"', false)
+            ->assertSee('<figcaption>Tableau de bord</figcaption>', false)
+            ->assertSee('<video src="/storage/posts/media/2026/10/demo.mp4"', false)
+            ->assertSee('https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ', false)
+            ->assertDontSee('src="javascript:', false);
+    }
+
+    public function test_uploaded_media_is_appended_to_the_article_body(): void
+    {
+        Storage::fake('public');
+        $post = Post::create(['slug' => 'upload', 'title' => ['fr' => 'Upload'], 'body' => ['fr' => 'Intro', 'en' => '']]);
+
+        $component = Livewire::actingAs(User::factory()->owner()->create())
+            ->test(PostForm::class, ['post' => $post])
+            ->set('media', [UploadedFile::fake()->image('capture.png'), UploadedFile::fake()->create('demo.mp4', 2000, 'video/mp4')])
+            ->assertHasNoErrors();
+
+        $body = $component->get('form.body');
+        $this->assertStringStartsWith("Intro\n\n![](/storage/posts/media/", $body['fr']);
+        $this->assertSame(2, substr_count($body['fr'], '![]('));
+        $this->assertStringContainsString('.mp4)', $body['en']);
+        $this->assertCount(2, Storage::disk('public')->allFiles('posts/media'));
+
+        $component->set('media', [UploadedFile::fake()->create('virus.exe', 10)])->assertHasErrors('media.0');
     }
 
     // ---------- Études de cas ----------

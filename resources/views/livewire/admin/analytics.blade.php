@@ -28,6 +28,16 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    @if ($s['total_visitors'] === 0)
+        <flux:callout icon="information-circle" color="amber">
+            <flux:callout.heading>Aucune visite enregistrée pour l’instant</flux:callout.heading>
+            <flux:callout.text>
+                Vos propres visites ne sont pas comptées tant que vous êtes connecté à l’administration, ni celles d’un navigateur réglé sur « Ne pas me suivre ».
+                Pour tester, ouvrez le site depuis votre téléphone ou une fenêtre de navigation privée (sans être connecté) : la visite apparaît ici dans la minute.
+            </flux:callout.text>
+        </flux:callout>
+    @endif
+
     <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
         @foreach ($kpis as [$icon, $label, $value, $hint])
             <flux:card class="flex flex-col gap-2">

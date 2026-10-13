@@ -21,8 +21,8 @@
                 <i class="fas fa-star watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-shield-halved" aria-hidden="true"></i> {{ __('Modération') }}</span>
                 <div>
-                    <h3 style="font-size: 1.35rem;">{{ __('Votre email reste privé') }}</h3>
-                    <p style="margin-top: 8px;">{{ __('Il sert uniquement à vérifier votre avis. Il n’est jamais affiché.') }}</p>
+                    <h3>{{ __('Votre email reste privé') }}</h3>
+                    <p>{{ __('Il sert uniquement à vérifier votre avis. Il n’est jamais affiché.') }}</p>
                 </div>
             </div>
         </div>

@@ -19,6 +19,22 @@
                     description="« ## » intertitre, « ### » sous-titre, « - » liste, « > » citation, ``` bloc de code ```, `code` dans le texte, **gras**." />
             </flux:card>
 
+            <flux:card class="flex flex-col gap-4">
+                <div class="flex items-center gap-2">
+                    <flux:icon name="photo" class="size-5 text-copper-dark" />
+                    <flux:heading>Images et vidéos</flux:heading>
+                </div>
+                <flux:input type="file" wire:model="media" multiple accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm" />
+                <div wire:loading wire:target="media" class="text-sm text-zinc-500">Envoi en cours…</div>
+                <flux:error name="media" />
+                <flux:error name="media.*" />
+                <flux:text class="text-xs leading-relaxed">
+                    Le fichier est ajouté à la fin du contenu sous la forme <code>![](adresse)</code> : déplacez cette ligne là où il doit apparaître et écrivez une légende entre les crochets, par exemple <code>![Tableau de bord](adresse)</code>.
+                    Images JPG, PNG, WebP, GIF ; vidéos MP4 ou WebM (50 Mo maximum).
+                    Pour une vidéo YouTube ou Vimeo, collez simplement son lien seul sur une ligne.
+                </flux:text>
+            </flux:card>
+
             <flux:card class="flex flex-col gap-5">
                 <flux:heading>Référencement</flux:heading>
                 <x-admin.translated-field model="form.seo_title" label="Titre SEO" description="70 caractères maximum. Par défaut : le titre." />

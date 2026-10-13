@@ -80,11 +80,11 @@
                 @endif
             </aside>
 
-            <a href="{{ lroute('services.index') }}" class="tile tile-copper stat reveal" style="min-height: 0;">
+            <a href="{{ lroute('services.index') }}" class="tile tile-copper stat reveal is-compact">
                 <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-lightbulb" aria-hidden="true"></i> {{ __('Besoin d’aide ?') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-                <h3 style="font-size: 1.3rem;">{{ __('Je conçois et sécurise ce type de plateforme pour vous.') }}</h3>
+                <h3>{{ __('Je conçois et sécurise ce type de plateforme pour vous.') }}</h3>
             </a>
             </div>
         </div>

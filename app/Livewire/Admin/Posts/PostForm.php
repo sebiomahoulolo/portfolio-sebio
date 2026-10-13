@@ -33,6 +33,35 @@ class PostForm extends Component
 
     public $cover = null;
 
+    /** Images et vidéos à insérer dans le contenu. */
+    public array $media = [];
+
+    /**
+     * Enregistre les fichiers choisis et ajoute leur code à la fin du contenu,
+     * dans chaque langue : il suffit ensuite de déplacer la ligne.
+     */
+    public function updatedMedia(): void
+    {
+        $this->authorize($this->postId ? 'update' : 'create', $this->postId ? Post::findOrFail($this->postId) : Post::class);
+
+        $this->validate([
+            'media' => ['array', 'max:10'],
+            'media.*' => ['file', 'mimes:jpg,jpeg,png,webp,gif,mp4,webm', 'max:51200'],
+        ], [], ['media.*' => 'fichier']);
+
+        $disk = Storage::disk(config('portfolio.media_disk'));
+        foreach ($this->media as $file) {
+            // Adresse relative au site : elle reste valable quel que soit le domaine.
+            $url = parse_url($disk->url($file->store('posts/media/'.now()->format('Y/m'), config('portfolio.media_disk'))), PHP_URL_PATH);
+            foreach (array_keys($this->form['body']) as $locale) {
+                $this->form['body'][$locale] = ltrim(rtrim((string) $this->form['body'][$locale])."\n\n![]({$url})");
+            }
+        }
+
+        Flux::toast(count($this->media) > 1 ? 'Fichiers ajoutés à la fin du contenu.' : 'Fichier ajouté à la fin du contenu.', variant: 'success');
+        $this->reset('media');
+    }
+
     public function mount(?Post $post = null): void
     {
         $locales = array_fill_keys(array_keys(config('portfolio.locales')), '');

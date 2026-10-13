@@ -44,7 +44,7 @@
                 </div>
                 <div>
                     <p class="intro-name"><strong>{{ $profile->name }}</strong> · {{ $profile->translate('headline') }}</p>
-                    <h1 style="margin-top: 14px;">
+                    <h1>
                         <span class="line"><span>{{ $taglineLines[0] }}</span></span>
                         @isset($taglineLines[1])<span class="line"><span class="accent">{{ $taglineLines[1] }}</span></span>@endisset
                     </h1>
@@ -115,7 +115,7 @@
                 </div>
                 <div>
                     <div class="stat-value"><span data-count="{{ $publishedCount }}">{{ $publishedCount }}</span></div>
-                    <p>{{ __("projets en ligne, de l'idée à la production") }}</p>
+                    <p>{{ __('projets en ligne et en service aujourd’hui') }}</p>
                 </div>
             </a>
 
@@ -192,8 +192,8 @@
                         <span class="tile-label"><i class="fas fa-comments" aria-hidden="true"></i> {{ __('Sur mesure') }}</span>
                         <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                         <div>
-                            <h3 style="font-size: 1.35rem;">{{ __('Un besoin spécifique ?') }}</h3>
-                            <p style="margin-top: 8px;">{{ __('Décrivez-le, je vous propose une solution.') }}</p>
+                            <h3>{{ __('Un besoin spécifique ?') }}</h3>
+                            <p>{{ __('Décrivez-le en quelques lignes, je vous réponds sous 48 h.') }}</p>
                         </div>
                     </a>
                 </div>
@@ -207,7 +207,7 @@
             <div class="section-head reveal">
                 <div>
                     <span class="eyebrow">{{ __('À propos') }}</span>
-                    <h2>{{ __('Des plateformes utiles, robustes et pensées pour durer.') }}</h2>
+                    <h2>{{ __('Développeur, formateur et fondateur d’AfriCode.') }}</h2>
                 </div>
             </div>
 
@@ -273,7 +273,7 @@
                 <div class="section-head reveal">
                     <div>
                         <span class="eyebrow">{{ __('Compétences') }}</span>
-                        <h2>{{ __('Une stack maîtrisée de bout en bout.') }}</h2>
+                        <h2>{{ __('Les outils que j’utilise au quotidien.') }}</h2>
                     </div>
                     <p>{{ __("De l'interface à la base de données, en passant par la sécurité, les paiements en ligne et le déploiement.") }}</p>
                 </div>
@@ -326,8 +326,8 @@
                         <span class="tile-label"><i class="fas fa-folder-open" aria-hidden="true"></i> {{ __('Galerie') }}</span>
                         <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                         <div>
-                            <h3 style="font-size: 1.45rem;">{{ __('Voir tous les projets') }}</h3>
-                            <p style="margin-top: 8px;">{{ __('Filtrez par technologie et lisez les études de cas.') }}</p>
+                            <h3>{{ __('Voir tous les projets') }}</h3>
+                            <p>{{ __('Filtrez par technologie et lisez les études de cas.') }}</p>
                         </div>
                     </a>
                 </div>
@@ -354,13 +354,13 @@
                 @foreach ($testimonials->take(4) as $testimonial)
                     <x-site.testimonial-card :testimonial="$testimonial" :dark="$loop->first" :delay="($loop->index % 2) * 0.08" />
                 @endforeach
-                <a href="{{ lroute('reviews.create') }}" @class(['tile tile-copper stat reveal', $testimonials->take(4)->count() % 2 ? 'span-2' : 'span-4']) style="min-height: 0;">
+                <a href="{{ lroute('reviews.create') }}" @class(['tile tile-copper stat is-compact reveal', $testimonials->take(4)->count() % 2 ? 'span-2' : 'span-4'])>
                     <i class="fas fa-star watermark" aria-hidden="true"></i>
                     <span class="tile-label"><i class="fas fa-comment-dots" aria-hidden="true"></i> {{ __('Votre avis') }}</span>
                     <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                     <div>
-                        <h3 style="font-size: 1.4rem;">{{ __('Vous avez travaillé avec moi ?') }}</h3>
-                        <p style="margin-top: 8px;">{{ __('Partagez votre expérience en une minute. Votre avis sera publié après validation.') }}</p>
+                        <h3>{{ __('Vous avez travaillé avec moi ?') }}</h3>
+                        <p>{{ __('Partagez votre expérience en une minute. Votre avis sera publié après validation.') }}</p>
                     </div>
                 </a>
             </div>

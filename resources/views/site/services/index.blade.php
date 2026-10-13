@@ -25,7 +25,7 @@
                 <nav class="breadcrumb" aria-label="{{ __("Fil d'Ariane") }}">
                     <a href="{{ lroute('home') }}">{{ __('Accueil') }}</a><span aria-hidden="true">/</span><span>{{ __('Services') }}</span>
                 </nav>
-                <h1>{{ __('Des solutions numériques sécurisées, de l’idée à la production.') }}</h1>
+                <h1>{{ __('Sites, SaaS, bases de données, sécurité et formation.') }}</h1>
                 <p class="lead">{{ __('Je conçois, développe et sécurise vos plateformes web, et je forme vos équipes pour qu’elles restent autonomes.') }}</p>
                 <div class="page-actions">
                     <a href="#contact" class="btn btn-primary" data-magnetic>{{ __('Demander un devis') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
@@ -41,7 +41,7 @@
                 </div>
                 <div>
                     <div class="stat-value"><span data-count="{{ $services->count() }}">{{ $services->count() }}</span></div>
-                    <p>{{ __('domaines d’expertise, une seule exigence : la qualité') }}</p>
+                    <p>{{ __('domaines où j’interviens, du code à la formation') }}</p>
                 </div>
             </div>
         </div>

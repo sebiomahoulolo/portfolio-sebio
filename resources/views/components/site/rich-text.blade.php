@@ -6,7 +6,24 @@
      * Tout est échappé, puis seuls quelques motifs sont interprétés :
      *   ## intertitre · ### sous-titre · - ou * liste · > citation
      *   ``` bloc de code ``` · `code` · **gras**
+     *   ![légende](adresse) : image, ou vidéo si l'adresse finit par .mp4/.webm
+     *   lien YouTube ou Vimeo seul sur sa ligne : vidéo intégrée
      */
+    // Seules les adresses https:// ou internes au site (/storage/...) sont acceptées.
+    $safeUrl = fn (string $url) => (bool) preg_match('~^(https://|/(?!/))~i', $url);
+    $media = function (string $line) use ($safeUrl): ?array {
+        if (preg_match('/^!\[([^\]]*)\]\((\S+)\)$/', $line, $m) && $safeUrl($m[2])) {
+            return [preg_match('/\.(mp4|webm)(\?\S*)?$/i', $m[2]) ? 'video' : 'img', $m[2], $m[1]];
+        }
+        if (preg_match('~^https://(?:www\.|m\.)?(?:youtube\.com/(?:watch\?v=|shorts/|embed/)|youtu\.be/)([\w-]{11})\S*$~', $line, $m)) {
+            return ['embed', 'https://www.youtube-nocookie.com/embed/'.$m[1], 'YouTube'];
+        }
+        if (preg_match('~^https://(?:www\.)?vimeo\.com/(\d+)\S*$~', $line, $m)) {
+            return ['embed', 'https://player.vimeo.com/video/'.$m[1], 'Vimeo'];
+        }
+
+        return null;
+    };
     $inline = fn (string $line) => preg_replace(
         ['/`([^`]+)`/', '/\*\*([^*]+)\*\*/'],
         ['<code>$1</code>', '<strong>$1</strong>'],
@@ -43,6 +60,9 @@
             $code = ['lang' => trim(substr($line, 3)), 'lines' => []];
         } elseif ($line === '') {
             $flush();
+        } elseif ($item = $media($line)) {
+            $flush();
+            $blocks[] = $item;
         } elseif (str_starts_with($line, '### ')) {
             $flush();
             $blocks[] = ['h3', substr($line, 4)];
@@ -83,6 +103,23 @@
                 @break
             @case('code')
                 <pre class="code-block" @if ($block[2]) data-lang="{{ $block[2] }}" @endif><code>{{ implode("\n", $block[1]) }}</code></pre>
+                @break
+            @case('img')
+                <figure class="prose-media">
+                    <img src="{{ $block[1] }}" alt="{{ $block[2] }}" loading="lazy">
+                    @if ($block[2])<figcaption>{{ $block[2] }}</figcaption>@endif
+                </figure>
+                @break
+            @case('video')
+                <figure class="prose-media">
+                    <video src="{{ $block[1] }}" controls controlslist="nodownload" preload="metadata" playsinline oncontextmenu="return false;"></video>
+                    @if ($block[2])<figcaption>{{ $block[2] }}</figcaption>@endif
+                </figure>
+                @break
+            @case('embed')
+                <figure class="prose-media prose-embed">
+                    <iframe src="{{ $block[1] }}" title="{{ __('Vidéo') }} {{ $block[2] }}" loading="lazy" allow="encrypted-media; picture-in-picture; fullscreen" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
+                </figure>
                 @break
             @default
                 <p>{!! implode('<br>', array_map($inline, $block[1])) !!}</p>

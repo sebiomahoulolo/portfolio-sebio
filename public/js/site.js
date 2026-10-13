@@ -88,16 +88,49 @@
     if (backToTop) backToTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); });
 
     /* ---------- Menu mobile ---------- */
+    // Panneau qui glisse depuis la droite ; le fond de page ne défile plus pendant l'ouverture.
     var toggle = document.querySelector('.nav-toggle');
-    if (toggle && nav) {
+    var menu = document.getElementById('mobile-menu');
+    if (toggle && menu) {
         var setOpen = function (open) {
-            nav.classList.toggle('is-open', open);
+            if (open === menu.classList.contains('is-open')) return;
+            menu.classList.toggle('is-open', open);
+            root.classList.toggle('menu-open', open);
             toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-            toggle.innerHTML = open ? '<i class="fas fa-xmark" aria-hidden="true"></i>' : '<i class="fas fa-bars" aria-hidden="true"></i>';
+            if (open) {
+                menu.removeAttribute('inert');
+                var first = menu.querySelector('.mobile-menu-links a');
+                if (first) setTimeout(function () { first.focus({ preventScroll: true }); }, 350);
+            } else {
+                menu.setAttribute('inert', '');
+                toggle.focus({ preventScroll: true });
+            }
         };
-        toggle.addEventListener('click', function () { setOpen(!nav.classList.contains('is-open')); });
-        nav.addEventListener('click', function (e) { if (e.target.closest('a')) setOpen(false); });
+        toggle.addEventListener('click', function () { setOpen(true); });
+        menu.addEventListener('click', function (e) {
+            if (e.target.closest('[data-menu-close]') || e.target.closest('a')) setOpen(false);
+        });
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
+        window.addEventListener('resize', function () { if (window.innerWidth > 980) setOpen(false); });
+
+        // Glisser le panneau vers la droite pour le fermer.
+        var panel = menu.querySelector('.mobile-menu-panel');
+        var startX = null;
+        panel.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+        panel.addEventListener('touchmove', function (e) {
+            if (startX === null) return;
+            var dx = Math.max(0, e.touches[0].clientX - startX);
+            panel.style.transition = 'none';
+            panel.style.transform = 'translateX(' + dx + 'px)';
+        }, { passive: true });
+        panel.addEventListener('touchend', function (e) {
+            if (startX === null) return;
+            var dx = e.changedTouches[0].clientX - startX;
+            startX = null;
+            panel.style.transition = '';
+            panel.style.transform = '';
+            if (dx > 80) setOpen(false);
+        });
     }
 
     /* ---------- Boutons : onde au clic et effet magnétique ---------- */
