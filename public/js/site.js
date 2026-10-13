@@ -1,11 +1,14 @@
-// Site public — interactions légères, sans dépendance.
+// Site public — interactions et animations légères, sans dépendance.
 (function () {
-    document.documentElement.classList.remove('no-js');
+    var root = document.documentElement;
+    root.classList.remove('no-js');
+    var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var finePointer = window.matchMedia('(pointer: fine)').matches;
 
-    // En-tête : fond opaque après défilement.
+    // En-tête : ombre renforcée après défilement.
     var header = document.querySelector('.site-header');
-    if (header && !header.classList.contains('is-solid')) {
-        var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 24); };
+    if (header) {
+        var onScroll = function () { header.classList.toggle('is-scrolled', window.scrollY > 16); };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
     }
@@ -24,40 +27,100 @@
         document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
     }
 
-    // Apparition des blocs et remplissage des barres de compétences.
-    var revealables = document.querySelectorAll('.reveal, .skills-grid');
+    // Compteurs animés (années d'expérience, projets...).
+    var animateCounter = function (el) {
+        var target = parseInt(el.getAttribute('data-count'), 10) || 0;
+        if (reduceMotion) { el.textContent = target; return; }
+        var start = null, duration = 1400;
+        var step = function (ts) {
+            if (!start) start = ts;
+            var progress = Math.min((ts - start) / duration, 1);
+            el.textContent = Math.round(target * (1 - Math.pow(1 - progress, 3)));
+            if (progress < 1) requestAnimationFrame(step);
+        };
+        requestAnimationFrame(step);
+    };
+
+    // Apparition des blocs, barres de compétences et compteurs.
+    var revealables = document.querySelectorAll('.reveal, [data-count]');
+    var show = function (el) {
+        el.classList.add('is-visible');
+        if (el.hasAttribute('data-count')) animateCounter(el);
+    };
     if ('IntersectionObserver' in window) {
         var observer = new IntersectionObserver(function (entries) {
             entries.forEach(function (entry) {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
-                    observer.unobserve(entry.target);
-                }
+                if (entry.isIntersecting) { show(entry.target); observer.unobserve(entry.target); }
             });
-        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+        }, { threshold: 0.12, rootMargin: '0px 0px -30px 0px' });
         revealables.forEach(function (el) { observer.observe(el); });
     } else {
-        revealables.forEach(function (el) { el.classList.add('is-visible'); });
+        revealables.forEach(show);
     }
 
-    // Lien actif dans la navigation selon la section visible.
-    var links = document.querySelectorAll('.nav a[href^="#"], .nav a[href*="/#"]');
-    var sections = Array.prototype.map.call(links, function (link) {
-        return document.getElementById(link.getAttribute('href').split('#')[1]);
-    });
-    if (sections.some(Boolean) && 'IntersectionObserver' in window) {
-        var spy = new IntersectionObserver(function (entries) {
-            entries.forEach(function (entry) {
-                if (!entry.isIntersecting) return;
-                links.forEach(function (link) {
-                    link.classList.toggle('is-active', link.getAttribute('href').split('#')[1] === entry.target.id);
-                });
+    // Texte qui s'écrit tout seul.
+    var typed = document.querySelector('[data-typed]');
+    if (typed) {
+        var phrases = JSON.parse(typed.getAttribute('data-typed') || '[]').filter(Boolean);
+        var output = typed.querySelector('.typed-text');
+        if (phrases.length && output) {
+            if (reduceMotion) {
+                output.textContent = phrases[0];
+            } else {
+                var p = 0, i = 0, deleting = false;
+                var tick = function () {
+                    var phrase = phrases[p];
+                    i += deleting ? -1 : 1;
+                    output.textContent = phrase.slice(0, i);
+                    var delay = deleting ? 35 : 65;
+                    if (!deleting && i === phrase.length) { deleting = phrases.length > 1; delay = 2200; if (!deleting) return; }
+                    else if (deleting && i === 0) { deleting = false; p = (p + 1) % phrases.length; delay = 350; }
+                    setTimeout(tick, delay);
+                };
+                setTimeout(tick, 500);
+            }
+        }
+    }
+
+    // Heure locale en direct.
+    var clock = document.querySelector('[data-clock]');
+    if (clock) {
+        var tz = clock.getAttribute('data-clock');
+        var render = function () {
+            try {
+                var parts = new Intl.DateTimeFormat('fr-FR', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: tz }).formatToParts(new Date());
+                var h = parts.find(function (x) { return x.type === 'hour'; }).value;
+                var m = parts.find(function (x) { return x.type === 'minute'; }).value;
+                clock.innerHTML = h + '<span class="sep">:</span>' + m;
+            } catch (e) { /* fuseau inconnu : on garde la valeur serveur */ }
+        };
+        render();
+        setInterval(render, 15000);
+    }
+
+    // Lueur qui suit la souris sur les blocs.
+    if (finePointer && !reduceMotion) {
+        document.addEventListener('pointermove', function (e) {
+            var tile = e.target.closest && e.target.closest('.tile');
+            if (!tile) return;
+            var rect = tile.getBoundingClientRect();
+            tile.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
+            tile.style.setProperty('--my', (e.clientY - rect.top) + 'px');
+        }, { passive: true });
+
+        // Inclinaison 3D des cartes de projet.
+        document.querySelectorAll('.project-tile').forEach(function (card) {
+            card.addEventListener('pointermove', function (e) {
+                var r = card.getBoundingClientRect();
+                var x = (e.clientX - r.left) / r.width - 0.5;
+                var y = (e.clientY - r.top) / r.height - 0.5;
+                card.style.transform = 'perspective(900px) rotateX(' + (-y * 6).toFixed(2) + 'deg) rotateY(' + (x * 8).toFixed(2) + 'deg) translateY(-4px)';
             });
-        }, { rootMargin: '-45% 0px -50% 0px' });
-        sections.forEach(function (section) { if (section) spy.observe(section); });
+            card.addEventListener('pointerleave', function () { card.style.transform = ''; });
+        });
     }
 
-    // Formulaire de contact : champ budget visible uniquement pour un devis.
+    // Formulaire de contact : budget visible uniquement pour un devis.
     var form = document.querySelector('[data-contact-form]');
     if (form) {
         var budget = form.querySelector('[data-budget-field]');
@@ -67,7 +130,6 @@
         };
         form.addEventListener('change', function (e) { if (e.target.name === 'type') sync(); });
         sync();
-
         form.addEventListener('submit', function () {
             var button = form.querySelector('button[type="submit"]');
             if (button) {

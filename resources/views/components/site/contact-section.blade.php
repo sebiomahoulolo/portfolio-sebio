@@ -6,12 +6,14 @@
     $field = fn (string $name) => ['field', 'has-error' => $errors->has($name)];
 @endphp
 
-<section class="section section-dark on-dark" id="contact">
-    <div class="container contact-grid">
-        <div class="contact-intro reveal">
-            <span class="eyebrow">Contact</span>
-            <h2>Un projet en tête ? Parlons-en.</h2>
-            <p class="lead">Site vitrine, plateforme sur mesure, intégration de paiement ou formation : décrivez votre besoin, je reviens vers vous sous 48 heures ouvrées.</p>
+<section class="section" id="contact">
+    <div class="container bento">
+        <div class="tile tile-dark contact-intro span-2 reveal">
+            <div>
+                <span class="tile-label"><i class="fas fa-paper-plane" aria-hidden="true"></i> Contact</span>
+                <h2>Un projet en tête ? Parlons-en.</h2>
+                <p class="lead">Site vitrine, plateforme sur mesure, intégration de paiement ou formation : décrivez votre besoin, je reviens vers vous sous 48 heures ouvrées.</p>
+            </div>
 
             <div class="channels">
                 @if ($profile->email)
@@ -35,7 +37,7 @@
             </div>
         </div>
 
-        <div class="form-card reveal" style="--delay: .1s">
+        <div class="tile span-2 reveal" style="--delay: .08s">
             @if (session('contact_sent'))
                 <div class="alert alert-success" role="status">
                     <i class="fas fa-circle-check" aria-hidden="true"></i>
@@ -107,7 +109,7 @@
 
                 <div class="form-footer">
                     <small>Vos informations servent uniquement à répondre à votre demande.</small>
-                    <button type="submit" class="btn btn-primary">Envoyer le message <i class="fas fa-paper-plane" aria-hidden="true"></i></button>
+                    <button type="submit" class="btn btn-primary">Envoyer le message <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </form>
         </div>

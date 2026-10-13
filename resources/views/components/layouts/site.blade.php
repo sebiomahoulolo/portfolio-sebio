@@ -5,11 +5,11 @@
     'image' => null,
     'canonical' => null,
     'indexable' => true,
-    'solidHeader' => false,
     'type' => 'website',
 ])
 
 @php
+    $initials = Str::of($profile->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('');
     $siteTitle = $title ?? ($profile->translate('seo_title') ?: $profile->name.' — '.$profile->translate('headline'));
     $metaDescription = Str::limit(strip_tags($description ?? ($profile->translate('seo_description') ?: $profile->translate('intro'))), 160);
     $shareImage = $image ?? ($profile->og_image_path ? $profile->mediaUrl($profile->og_image_path) : asset('images/about/3.jpg'));
@@ -52,10 +52,10 @@
 <body>
     <a href="#main" class="skip-link">Aller au contenu</a>
 
-    <header @class(['site-header', 'is-solid' => $solidHeader])>
-        <div class="container">
+    <header class="site-header">
+        <div class="nav-shell">
             <a href="{{ route('home') }}" class="brand" aria-label="{{ $profile->name }} — accueil">
-                <span class="brand-mark" aria-hidden="true">{{ Str::of($profile->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('') }}</span>
+                <span class="brand-mark" aria-hidden="true">{{ $initials }}</span>
                 <span>{{ $profile->name }}</span>
             </a>
             <button class="nav-toggle" type="button" aria-controls="site-nav" aria-expanded="false" aria-label="Menu">
@@ -77,23 +77,16 @@
 
     <footer class="site-footer">
         <div class="container">
-            <div class="footer-top">
-                <a href="{{ route('home') }}" class="brand">
-                    <span class="brand-mark" aria-hidden="true">{{ Str::of($profile->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('') }}</span>
-                    <span>{{ $profile->name }}</span>
-                </a>
+            <div class="footer-inner">
+                <span>© <span data-year>{{ date('Y') }}</span> {{ $profile->name }} · {{ $profile->location }}</span>
                 <nav class="footer-nav" aria-label="Pied de page">
                     <a href="{{ $anchor('a-propos') }}">À propos</a>
                     <a href="{{ route('projects.index') }}">Projets</a>
                     <a href="{{ $anchor('parcours') }}">Parcours</a>
                     <a href="{{ $anchor('contact') }}">Contact</a>
-                    <a href="{{ route('cv') }}">CV</a>
+                    <a href="{{ route('cv') }}" target="_blank" rel="noopener">CV</a>
                 </nav>
                 <x-site.socials :profile="$profile" />
-            </div>
-            <div class="footer-bottom">
-                <span>© <span data-year>{{ date('Y') }}</span> {{ $profile->name }}. Tous droits réservés.</span>
-                <span>{{ $profile->location }}</span>
             </div>
         </div>
     </footer>

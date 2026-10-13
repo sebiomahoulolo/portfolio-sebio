@@ -31,7 +31,7 @@ class HomeController extends Controller
             'projects' => $projects,
             'publishedCount' => Project::published()->count(),
             'skills' => Technology::where('show_in_skills', true)->orderBy('sort_order')->get()->groupBy('category'),
-            'marquee' => Technology::where('show_in_skills', true)->orderBy('sort_order')->pluck('name'),
+            'stack' => Technology::where('show_in_skills', true)->orderBy('category')->orderBy('sort_order')->get(['name', 'icon']),
             'experiences' => $experiences,
             'educations' => Education::visible()->orderBy('sort_order')->get(),
             'certifications' => Certification::visible()->orderByDesc('issued_at')->get(),

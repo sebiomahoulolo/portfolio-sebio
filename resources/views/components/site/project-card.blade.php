@@ -1,17 +1,25 @@
-@props(['project', 'delay' => 0])
+@props(['project', 'delay' => 0, 'wide' => false])
 
 @php
     $title = $project->translate('title');
 @endphp
 
-<article class="project-card reveal" style="--delay: {{ $delay }}s">
+<article @class(['tile project-tile reveal', 'span-2' => $wide]) style="--delay: {{ $delay }}s">
     <div class="project-media">
         @if ($project->coverUrl())
             <img src="{{ $project->coverUrl() }}" alt="{{ $project->translate('cover_alt') ?? '' }}" loading="lazy" width="800" height="500">
         @else
             <div class="project-placeholder" aria-hidden="true">
-                <span>{{ $title }}</span>
-                @if ($project->demo_url)<small>{{ parse_url($project->demo_url, PHP_URL_HOST) }}</small>@endif
+                <div class="browser">
+                    <div class="browser-bar">
+                        <i></i><i></i><i></i>
+                        <span>{{ $project->demo_url ? parse_url($project->demo_url, PHP_URL_HOST) : Str::slug($title).'.app' }}</span>
+                    </div>
+                    <div class="browser-body">
+                        <b>{{ $title }}</b>
+                        <em></em><em></em><em class="short"></em>
+                    </div>
+                </div>
             </div>
         @endif
     </div>
