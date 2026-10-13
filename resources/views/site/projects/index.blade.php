@@ -13,6 +13,7 @@
                 <p class="lead">{{ __("Une sélection de plateformes conçues et développées de bout en bout, de l'analyse du besoin à la mise en production.") }}</p>
             </div>
             <div class="tile tile-copper stat reveal is-visible" style="--delay: .08s">
+                <i class="fas fa-layer-group watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-layer-group" aria-hidden="true"></i> {{ $activeTechnology ? $activeTechnology->name : __('Au total') }}</span>
                 <div>
                     <div class="stat-value"><span data-count="{{ $projects->count() }}">{{ $projects->count() }}</span></div>
@@ -41,6 +42,7 @@
                         <x-site.project-card :project="$project" :wide="$loop->index % 5 === 0" :delay="($loop->index % 4) * 0.06" />
                     @endforeach
                     <a href="{{ lroute('services.index') }}" class="tile tile-dark stat span-4 reveal" style="min-height: 0;">
+                        <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                         <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Et vous ?') }}</span>
                         <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                         <div>

@@ -95,6 +95,7 @@
             @endif
 
             <a href="{{ lroute('services.index') }}" @class(['tile tile-copper stat reveal', 'span-2' => ! $hasCaseStudy])>
+                <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Un projet similaire ?') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                 <h3 style="font-size: 1.4rem;">{{ __('Découvrez mes services') }}</h3>

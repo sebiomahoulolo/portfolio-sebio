@@ -68,7 +68,6 @@
 </head>
 <body>
     <a href="#main" class="skip-link">{{ __('Aller au contenu') }}</a>
-    <div class="scroll-progress" aria-hidden="true"></div>
 
     <header class="site-header">
         <div class="nav-shell">
@@ -77,11 +76,13 @@
                 <span class="brand-name">{{ $profile->name }}</span>
             </a>
 
+            {{-- data-section : section de l'accueil qui active le lien pendant le défilement. --}}
             <nav id="site-nav" class="nav" aria-label="{{ __('Navigation principale') }}">
-                <a href="{{ $anchor('a-propos') }}">{{ __('À propos') }}</a>
-                <a href="{{ lroute('services.index') }}" @class(['is-active' => $is('services.*')])>{{ __('Services') }}</a>
-                <a href="{{ lroute('projects.index') }}" @class(['is-active' => $is('projects.*')])>{{ __('Projets') }}</a>
-                <a href="{{ $anchor('parcours') }}">{{ __('Parcours') }}</a>
+                <span class="nav-indicator" aria-hidden="true"></span>
+                <a href="{{ $anchor('a-propos') }}" data-section="a-propos">{{ __('À propos') }}</a>
+                <a href="{{ lroute('services.index') }}" data-section="services" @class(['is-active' => $is('services.*')])>{{ __('Services') }}</a>
+                <a href="{{ lroute('projects.index') }}" data-section="projets" @class(['is-active' => $is('projects.*')])>{{ __('Projets') }}</a>
+                <a href="{{ $anchor('parcours') }}" data-section="parcours">{{ __('Parcours') }}</a>
                 <a href="{{ $anchor('contact') }}" class="btn btn-primary btn-sm" data-magnetic>{{ __('Me contacter') }}</a>
             </nav>
 
@@ -100,6 +101,7 @@
                     <i class="fas fa-bars" aria-hidden="true"></i>
                 </button>
             </div>
+            <span class="nav-progress" aria-hidden="true"></span>
         </div>
     </header>
 

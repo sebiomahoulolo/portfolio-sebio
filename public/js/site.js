@@ -36,25 +36,55 @@
 
     /* ---------- En-tête, progression, retour en haut ---------- */
     var header = document.querySelector('.site-header');
-    var progress = document.querySelector('.scroll-progress');
+    var progress = document.querySelector('.nav-progress');
     var backToTop = document.querySelector('.back-to-top');
     var nav = document.getElementById('site-nav');
-    var lastY = window.scrollY;
+    var indicator = nav && nav.querySelector('.nav-indicator');
+    var spyLinks = nav ? Array.prototype.slice.call(nav.querySelectorAll('a[data-section]')) : [];
+    var spySections = spyLinks
+        .map(function (link) { return document.getElementById(link.getAttribute('data-section')); })
+        .filter(Boolean);
+    // Lien actif fixé par la page (Services, Projets) quand aucune section n'est suivie.
+    var pageActive = nav && nav.querySelector('a.is-active[data-section]');
+
+    var moveIndicator = function () {
+        if (!indicator || window.innerWidth <= 980) return;
+        var active = nav.querySelector('a.is-active[data-section]');
+        nav.classList.add('has-indicator');
+        if (!active) { indicator.style.opacity = '0'; return; }
+        indicator.style.opacity = '1';
+        indicator.style.width = active.offsetWidth + 'px';
+        indicator.style.transform = 'translate(' + active.offsetLeft + 'px, -50%)';
+    };
+
+    var spy = function () {
+        if (!spySections.length) return;
+        var line = window.innerHeight * 0.35;
+        var current = null;
+        spySections.forEach(function (section) {
+            if (section.getBoundingClientRect().top <= line) current = section.id;
+        });
+        spyLinks.forEach(function (link) {
+            var on = current ? link.getAttribute('data-section') === current : link === pageActive;
+            link.classList.toggle('is-active', on);
+            if (on) link.setAttribute('aria-current', 'location'); else link.removeAttribute('aria-current');
+        });
+    };
+
     var onScroll = function () {
         var y = window.scrollY;
         var max = document.documentElement.scrollHeight - window.innerHeight;
         if (progress) progress.style.setProperty('--progress', max > 0 ? (y / max).toFixed(4) : 0);
-        if (header) {
-            header.classList.toggle('is-scrolled', y > 16);
-            var menuOpen = nav && nav.classList.contains('is-open');
-            header.classList.toggle('is-hidden', !menuOpen && y > 400 && y > lastY + 4);
-            if (y < lastY - 4) header.classList.remove('is-hidden');
-        }
+        if (header) header.classList.toggle('is-scrolled', y > 24);
         if (backToTop) backToTop.classList.toggle('is-visible', y > 900);
-        lastY = y;
+        spy();
+        moveIndicator();
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', moveIndicator);
+    // La barre change de taille en défilant : on recale l'indicateur à la fin de la transition.
+    if (header) header.addEventListener('transitionend', moveIndicator);
     if (backToTop) backToTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); });
 
     /* ---------- Menu mobile ---------- */

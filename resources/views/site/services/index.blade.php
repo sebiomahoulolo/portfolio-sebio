@@ -32,7 +32,13 @@
                 </div>
             </div>
             <div class="tile tile-copper stat reveal is-visible" style="--delay: .08s">
+                <i class="fas fa-layer-group watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-layer-group" aria-hidden="true"></i> {{ __('Services') }}</span>
+                <div class="mini-pills" aria-hidden="true">
+                    @foreach ($services as $service)
+                        <span class="mini-pill" style="--i: {{ $loop->index }}">{{ $service->translate('title') }}</span>
+                    @endforeach
+                </div>
                 <div>
                     <div class="stat-value"><span data-count="{{ $services->count() }}">{{ $services->count() }}</span></div>
                     <p>{{ __('domaines d’expertise, une seule exigence : la qualité') }}</p>

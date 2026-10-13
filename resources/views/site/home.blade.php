@@ -76,8 +76,20 @@
             </div>
 
             @if ($yearsOfExperience)
+                @php
+                    // Frise : une barre par année, du premier poste à aujourd'hui.
+                    $firstYear = $experiences->min('started_at')?->year ?? now()->year;
+                    $years = range(max($firstYear, now()->year - 5), now()->year);
+                @endphp
                 <div class="tile tile-dark stat reveal is-visible" style="--delay: .16s">
                     <span class="tile-label"><i class="fas fa-bolt" aria-hidden="true"></i> {{ __('Expérience') }}</span>
+                    <div class="years" aria-hidden="true">
+                        @foreach ($years as $i => $year)
+                            <span @class(['is-now' => $loop->last]) style="--i: {{ $i }}; --h: {{ 28 + (int) round(72 * ($i + 1) / count($years)) }}%">
+                                @if ($loop->first || $loop->last)<small>{{ $year }}</small>@endif
+                            </span>
+                        @endforeach
+                    </div>
                     <div>
                         <div class="stat-value"><span data-count="{{ $yearsOfExperience }}">{{ $yearsOfExperience }}</span>+<small>{{ __('ans') }}</small></div>
                         <p>{{ __('à concevoir et livrer des plateformes web') }}</p>
@@ -86,8 +98,14 @@
             @endif
 
             <a href="{{ lroute('projects.index') }}" class="tile tile-copper stat reveal is-visible" style="--delay: .24s">
+                <i class="fas fa-layer-group watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-layer-group" aria-hidden="true"></i> {{ __('Réalisations') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
+                <div class="mini-pills" aria-hidden="true">
+                    @foreach ($projects->take(5) as $project)
+                        <span class="mini-pill" style="--i: {{ $loop->index }}">{{ $project->translate('title') }}</span>
+                    @endforeach
+                </div>
                 <div>
                     <div class="stat-value"><span data-count="{{ $publishedCount }}">{{ $publishedCount }}</span></div>
                     <p>{{ __("projets en ligne, de l'idée à la production") }}</p>
@@ -163,6 +181,7 @@
                             :wide="$loop->first" :delay="($loop->index % 4) * 0.06" />
                     @endforeach
                     <a href="#contact" class="tile tile-copper stat reveal">
+                        <i class="fas fa-comments watermark" aria-hidden="true"></i>
                         <span class="tile-label"><i class="fas fa-comments" aria-hidden="true"></i> {{ __('Sur mesure') }}</span>
                         <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                         <div>
@@ -231,6 +250,7 @@
 
                 @if ($profile->translate('objective'))
                     <div class="tile tile-copper mission span-4 reveal">
+                        <i class="fas fa-bullseye watermark" aria-hidden="true"></i>
                         <span class="tile-label"><i class="fas fa-bullseye" aria-hidden="true"></i> {{ __('Ma mission') }}</span>
                         <blockquote>{{ $profile->translate('objective') }}</blockquote>
                     </div>
@@ -295,6 +315,7 @@
                         <x-site.project-card :project="$project" :wide="$loop->first" :delay="($loop->index % 4) * 0.06" />
                     @endforeach
                     <a href="{{ lroute('projects.index') }}" class="tile tile-dark stat reveal">
+                        <i class="fas fa-folder-open watermark" aria-hidden="true"></i>
                         <span class="tile-label"><i class="fas fa-folder-open" aria-hidden="true"></i> {{ __('Galerie') }}</span>
                         <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
                         <div>
