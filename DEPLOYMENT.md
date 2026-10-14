@@ -119,3 +119,23 @@ Vérification : `php artisan portfolio:backup` crée une archive tout de suite ;
 - [ ] La double authentification est activée dans **Mon compte** (codes de secours notés hors ligne).
 - [ ] `php artisan schedule:list` affiche les deux tâches, et une sauvegarde apparaît le lendemain dans **Sauvegardes**.
 - [ ] `https://mahoulolo-sebio.com/.env` renvoie une erreur 403.
+
+## 7. Intégration continue (GitHub Actions)
+
+Dépôt : <https://github.com/sebiomahoulolo/portfolio-sebio> (branche `main`).
+
+Le workflow [.github/workflows/deploy.yml](.github/workflows/deploy.yml) s’exécute à chaque push et pull request sur `main` : validation de `composer.json`, audit des failles des dépendances, compilation des assets de l’administration, puis les tests sur une base MySQL **jetable** du runner (jamais la production). Résultats : onglet **Actions** du dépôt.
+
+### Déploiement automatique : pas encore activé
+
+Il sera ajouté seulement après validation de ces points :
+
+| À confirmer | Où le trouver |
+|---|---|
+| Hôte, port SSH (souvent `65002`) et utilisateur `u…` | hPanel → Avancé → Accès SSH |
+| Chemin du site (`~/domains/<domaine>/public_html`) | hPanel → Gestionnaire de fichiers |
+| Clé SSH dédiée au déploiement (sans mot de passe) | à générer, clé publique ajoutée dans hPanel → SSH |
+| Stratégie de migration : `php artisan migrate --force` automatique, ou manuelle après sauvegarde | à décider |
+| Permissions `storage/` et `bootstrap/cache` (775) | après le premier déploiement |
+
+Les secrets iront dans GitHub → **Settings → Secrets and variables → Actions** (`HOSTINGER_HOST`, `HOSTINGER_PORT`, `HOSTINGER_USER`, `HOSTINGER_SSH_KEY`, `HOSTINGER_PATH`), jamais dans le code. Le `.env` de production reste uniquement sur le serveur.

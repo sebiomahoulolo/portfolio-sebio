@@ -1,0 +1,95 @@
+# Vérifications automatiques du portfolio à chaque push et pull request sur main.
+#
+# Le déploiement sur Hostinger est volontairement ABSENT de ce fichier : il ne
+# sera ajouté qu'une fois validés l'accès SSH, le chemin du site, les
+# permissions et la stratégie de migration (voir DEPLOYMENT.md, section CI/CD).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests Laravel (PHP 8.3, MySQL 8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: portfolio_sebio_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+
+    # Base de test jetable du runner : aucun lien avec la production.
+    env:
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
+
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v4
+
+      - name: Installer PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo_mysql, zip, gd, intl, bcmath, sodium, openssl
+          coverage: none
+          tools: composer:v2
+
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache/files
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Valider composer.json
+        run: composer validate --no-check-publish
+
+      - name: Installer les dépendances PHP
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Vérifier les failles connues des dépendances
+        run: composer audit
+
+      - name: Installer Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Compiler les assets de l'administration
+        run: |
+          npm ci
+          npm run build
+
+      - name: Préparer l'environnement
+        run: |
+          cp .env.example .env
+          php artisan key:generate --ansi
+
+      - name: Lancer les tests
+        run: php artisan test --no-ansi
