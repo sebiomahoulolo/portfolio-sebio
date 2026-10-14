@@ -6,7 +6,8 @@
 
 <x-layouts.site :profile="$profile"
     :title="__('Donner mon avis').' — '.$profile->name"
-    :description="__('Vous avez travaillé avec :name ? Partagez votre expérience.', ['name' => $profile->name])">
+    :description="__('Vous avez travaillé avec :name ? Partagez votre expérience.', ['name' => $profile->name])"
+    :indexable="false">
 
     <section class="page-head">
         <div class="container bento">
@@ -93,7 +94,7 @@
                         </div>
                     </div>
                     <div class="form-footer">
-                        <small>{{ __('Les avis sont relus avant publication.') }}</small>
+                        <small>{{ __('Les avis sont relus avant publication. Votre email n’est jamais publié.') }} <a href="{{ lroute('legal.privacy') }}">{{ __('En savoir plus') }}</a></small>
                         <button type="submit" class="btn btn-primary" data-magnetic data-sending="{{ __('Envoi en cours…') }}">{{ __('Publier mon avis') }} <i class="fas fa-paper-plane" aria-hidden="true"></i></button>
                     </div>
                 </form>

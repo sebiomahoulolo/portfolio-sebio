@@ -1,6 +1,7 @@
 <x-layouts.site :profile="$profile"
     :title="__('Services').' — '.$profile->name"
-    :description="__('Développement web, logiciels sur mesure et SaaS, applications, bases de données, conseil en sécurité et formation : les services de :name.', ['name' => $profile->name])">
+    :description="__('Développement web, logiciels sur mesure et SaaS, applications, bases de données, conseil en sécurité et formation : les services de :name.', ['name' => $profile->name])"
+    :breadcrumbs="[__('Services') => lroute('services.index')]">
 
     <x-slot:head>
         <script type="application/ld+json">

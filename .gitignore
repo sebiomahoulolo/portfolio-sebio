@@ -25,3 +25,20 @@ Thumbs.db
 
 # Archives de déploiement
 portfolio-*.tar.gz
+
+# Secrets : jamais versionnés (seuls les modèles .env.*example le sont)
+.env.*
+!.env.example
+!.env.production.example
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+
+# Sauvegardes et exports de base de données
+*.sql
+*.sql.gz
+*.sqlite
+/storage/app/private/backups

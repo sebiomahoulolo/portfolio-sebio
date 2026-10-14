@@ -17,15 +17,35 @@ class Technology extends Model
         'other' => 'Autre',
     ];
 
-    protected $fillable = ['name', 'slug', 'category', 'level', 'icon', 'show_in_skills', 'sort_order'];
+    /**
+     * Niveaux de maîtrise, du plus fort au plus faible (libellés traduits sur le site).
+     *
+     * - expert : utilisé au quotidien, capable de former quelqu'un
+     * - confirmed : projets livrés en autonomie
+     * - notions : déjà utilisé, hors cœur de métier
+     */
+    public const PROFICIENCIES = [
+        'expert' => 'Expert',
+        'confirmed' => 'Confirmé',
+        'notions' => 'Notions',
+    ];
+
+    /** Nombre minimum de projets pour afficher le compteur sur le site. */
+    public const MIN_PROJECTS_SHOWN = 2;
+
+    protected $fillable = ['name', 'slug', 'category', 'proficiency', 'icon', 'show_in_skills', 'sort_order'];
 
     protected function casts(): array
     {
         return [
-            'level' => 'integer',
             'show_in_skills' => 'boolean',
             'sort_order' => 'integer',
         ];
+    }
+
+    public function proficiencyLabel(): ?string
+    {
+        return $this->proficiency ? __(self::PROFICIENCIES[$this->proficiency] ?? $this->proficiency) : null;
     }
 
     public function projects(): BelongsToMany

@@ -1,7 +1,8 @@
 <x-layouts.site :profile="$profile"
     :title="__('Projets').($activeTechnology ? ' '.$activeTechnology->name : '').' — '.$profile->name"
     :description="__('Les réalisations de :name : plateformes web, SaaS et applications sur mesure.', ['name' => $profile->name])"
-    :indexable="! $activeTechnology">
+    :indexable="! $activeTechnology"
+    :breadcrumbs="[__('Projets') => lroute('projects.index')]">
 
     <section class="page-head">
         <div class="container bento">

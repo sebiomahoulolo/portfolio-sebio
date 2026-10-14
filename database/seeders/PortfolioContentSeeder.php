@@ -51,8 +51,8 @@ class PortfolioContentSeeder extends Seeder
             ],
             'years_experience' => 2,
             'intro' => [
-                'fr' => "Je transforme des systèmes éparpillés en plateformes uniques, sécurisées et faciles à faire évoluer. Développeur Full Stack Laravel depuis plus de 2 ans, je conçois des applications web et des plateformes SaaS, du cahier des charges jusqu'à la mise en production.",
-                'en' => 'I turn scattered systems into unified platforms that are secure and easy to evolve. A Full Stack Laravel developer for over 2 years, I design web applications and SaaS platforms, from the specification to production.',
+                'fr' => "Je transforme des systèmes éparpillés en plateformes uniques, sécurisées et faciles à faire évoluer. Développeur Full Stack Laravel depuis plus de {ans} ans, je conçois des applications web et des plateformes SaaS, du cahier des charges jusqu'à la mise en production.",
+                'en' => 'I turn scattered systems into unified platforms that are secure and easy to evolve. A Full Stack Laravel developer for over {ans} years, I design web applications and SaaS platforms, from the specification to production.',
             ],
             'about' => [
                 'fr' => "Je travaille sur des projets variés, des plateformes éducatives aux solutions digitales pour les entreprises et les institutions. Formateur, je partage mon savoir-faire avec les apprenants et les professionnels qui veulent renforcer leurs compétences numériques. Avec AfriCode, j'œuvre à rendre l'apprentissage du numérique accessible aux jeunes Africains.",
@@ -81,10 +81,18 @@ class PortfolioContentSeeder extends Seeder
                 'facebook' => 'https://facebook.com/sebio.mahoulolo',
             ],
             'spoken_languages' => [
-                ['name' => 'Français', 'level' => 'Natif'],
-                ['name' => 'Anglais', 'level' => 'Intermédiaire'],
-                ['name' => 'Adja', 'level' => 'Natif'],
-                ['name' => 'Baatonou', 'level' => 'Natif'],
+                'fr' => [
+                    ['name' => 'Français', 'level' => 'Natif'],
+                    ['name' => 'Anglais', 'level' => 'Intermédiaire'],
+                    ['name' => 'Adja', 'level' => 'Natif'],
+                    ['name' => 'Baatonou', 'level' => 'Natif'],
+                ],
+                'en' => [
+                    ['name' => 'French', 'level' => 'Native'],
+                    ['name' => 'English', 'level' => 'Intermediate'],
+                    ['name' => 'Adja', 'level' => 'Native'],
+                    ['name' => 'Baatonou', 'level' => 'Native'],
+                ],
             ],
             'interests' => [
                 'fr' => ['Innovation numérique', 'Transmission', 'Sport', 'Musique', 'Cinéma'],
@@ -107,18 +115,18 @@ class PortfolioContentSeeder extends Seeder
     private function seedTechnologies(): array
     {
         $skills = [
-            'frontend' => [['HTML5', 95, 'fab fa-html5'], ['CSS3', 90, 'fab fa-css3-alt'], ['JavaScript', 85, 'fab fa-js'], ['React.js', 80, 'fab fa-react'], ['Angular', 75, 'fab fa-angular'], ['Bootstrap', 90, 'fab fa-bootstrap']],
-            'backend' => [['Laravel', 90, 'fab fa-laravel'], ['PHP', 85, 'fab fa-php'], ['MySQL', 80, 'fas fa-database'], ['PostgreSQL', 75, 'fas fa-database'], ['API REST', 85, 'fas fa-plug']],
-            'tools' => [['Git/GitHub', 85, 'fab fa-github'], ['NPM', 80, 'fab fa-npm'], ['Composer', 85, 'fas fa-box'], ['FedaPay API', 75, 'fas fa-credit-card']],
+            'frontend' => [['HTML5', 'expert', 'fab fa-html5'], ['CSS3', 'expert', 'fab fa-css3-alt'], ['JavaScript', 'confirmed', 'fab fa-js'], ['React.js', 'confirmed', 'fab fa-react'], ['Angular', 'confirmed', 'fab fa-angular'], ['Bootstrap', 'expert', 'fab fa-bootstrap']],
+            'backend' => [['Laravel', 'expert', 'fab fa-laravel'], ['PHP', 'confirmed', 'fab fa-php'], ['MySQL', 'confirmed', 'fas fa-database'], ['PostgreSQL', 'confirmed', 'fas fa-database'], ['API REST', 'confirmed', 'fas fa-plug']],
+            'tools' => [['Git/GitHub', 'confirmed', 'fab fa-github'], ['NPM', 'confirmed', 'fab fa-npm'], ['Composer', 'confirmed', 'fas fa-box'], ['FedaPay API', 'confirmed', 'fas fa-credit-card']],
         ];
 
         $technologies = [];
 
         foreach ($skills as $category => $items) {
-            foreach ($items as $order => [$name, $level, $icon]) {
+            foreach ($items as $order => [$name, $proficiency, $icon]) {
                 $technologies[$name] = Technology::firstOrCreate(
                     ['slug' => Str::slug($name)],
-                    compact('name', 'category', 'level', 'icon') + ['sort_order' => $order, 'show_in_skills' => true],
+                    compact('name', 'category', 'proficiency', 'icon') + ['sort_order' => $order, 'show_in_skills' => true],
                 );
             }
         }

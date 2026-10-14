@@ -10,6 +10,8 @@
     :description="$post->translate('seo_description') ?: $post->translate('excerpt')"
     :image="$post->coverUrl()"
     :indexable="$post->is_indexable"
+    :published="$post->published_at"
+    :breadcrumbs="[__('Blog') => lroute('blog.index'), $title => $url]"
     type="article">
 
     <x-slot:head>

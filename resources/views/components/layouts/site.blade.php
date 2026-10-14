@@ -5,6 +5,9 @@
     'image' => null,
     'indexable' => true,
     'type' => 'website',
+    // Fil d'Ariane pour Google : [libellé => url], l'accueil est ajouté automatiquement.
+    'breadcrumbs' => [],
+    'published' => null,
 ])
 
 @php
@@ -55,10 +58,52 @@
     <meta property="og:description" content="{{ $metaDescription }}">
     <meta property="og:url" content="{{ $canonicalUrl }}">
     <meta property="og:image" content="{{ $shareImage }}">
+    <meta property="og:image:alt" content="{{ $siteTitle }}">
     <meta property="og:locale" content="{{ $locale === 'fr' ? 'fr_FR' : 'en_US' }}">
+    <meta property="og:locale:alternate" content="{{ $locale === 'fr' ? 'en_US' : 'fr_FR' }}">
+    @if ($published)
+        <meta property="article:published_time" content="{{ $published->toAtomString() }}">
+        <meta property="article:author" content="{{ $profile->name }}">
+    @endif
     <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $siteTitle }}">
+    <meta name="twitter:description" content="{{ $metaDescription }}">
+    <meta name="twitter:image" content="{{ $shareImage }}">
+    <meta name="author" content="{{ $profile->name }}">
 
-    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
+    @if ($code = config('portfolio.seo.google_verification'))
+        <meta name="google-site-verification" content="{{ $code }}">
+    @endif
+    @if ($code = config('portfolio.seo.bing_verification'))
+        <meta name="msvalidate.01" content="{{ $code }}">
+    @endif
+
+    @if ($home)
+        <script type="application/ld+json">
+            {!! json_encode([
+                '@context' => 'https://schema.org',
+                '@type' => 'WebSite',
+                'name' => $profile->name,
+                'url' => lroute('home'),
+                'inLanguage' => $locale,
+                'author' => ['@type' => 'Person', 'name' => $profile->name],
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+        </script>
+    @elseif ($breadcrumbs)
+        <script type="application/ld+json">
+            {!! json_encode([
+                '@context' => 'https://schema.org',
+                '@type' => 'BreadcrumbList',
+                'itemListElement' => collect([__('Accueil') => lroute('home')] + $breadcrumbs)
+                    ->map(fn ($url, $label) => ['name' => $label, 'item' => $url])
+                    ->values()
+                    ->map(fn ($item, $i) => ['@type' => 'ListItem', 'position' => $i + 1] + $item)
+                    ->all(),
+            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+        </script>
+    @endif
+
+    @include('partials.favicons')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
@@ -67,7 +112,7 @@
 
     {{ $head ?? '' }}
 </head>
-<body data-track="{{ route('analytics.store') }}">
+<body data-track="{{ route('analytics.store') }}" data-print-notice="{{ __('Ce contenu est protégé et ne peut pas être imprimé. Retrouvez-le en ligne sur :url', ['url' => url('/')]) }}">
     <a href="#main" class="skip-link">{{ __('Aller au contenu') }}</a>
 
     <header class="site-header">
@@ -161,9 +206,10 @@
                 </div>
                 <nav class="footer-nav" aria-label="{{ __('Pied de page') }}">
                     <a href="{{ lroute('services.index') }}">{{ __('Services') }}</a>
-                    <a href="{{ lroute('projects.index') }}">{{ __('Projets') }}</a>
                     <a href="{{ lroute('blog.index') }}">{{ __('Blog') }}</a>
                     <a href="{{ $anchor('contact') }}">{{ __('Contact') }}</a>
+                    <a href="{{ lroute('legal.notice') }}">{{ __('Mentions légales') }}</a>
+                    <a href="{{ lroute('legal.privacy') }}">{{ __('Confidentialité') }}</a>
                 </nav>
                 <x-site.socials :profile="$profile" />
             </div>
@@ -171,6 +217,21 @@
     </footer>
 
     <button type="button" class="back-to-top" aria-label="{{ __('Revenir en haut') }}"><i class="fas fa-arrow-up" aria-hidden="true"></i></button>
+
+    {{-- Notification affichée quand un visiteur tente de copier le contenu (voir site.js). --}}
+    <div class="protect-toast" role="status" aria-live="polite" hidden
+        data-msg-copy="{{ __('La copie du contenu est désactivée. Pour réutiliser un texte ou une image, contactez-moi.') }}"
+        data-msg-menu="{{ __('Le contenu de ce site est protégé et réservé à la consultation en ligne.') }}"
+        data-msg-image="{{ __('Les images de ce site sont protégées par le droit d’auteur.') }}"
+        data-msg-keys="{{ __('Ce raccourci est désactivé sur ce site.') }}">
+        <span class="protect-toast-icon" aria-hidden="true"><i class="fas fa-shield-halved"></i></span>
+        <span class="protect-toast-body">
+            <strong>{{ __('Contenu protégé') }}</strong>
+            <span data-protect-text></span>
+        </span>
+        <a href="{{ $anchor('contact') }}" class="protect-toast-link">{{ __('Me contacter') }}</a>
+        <button type="button" class="protect-toast-close" data-protect-close aria-label="{{ __('Fermer') }}"><i class="fas fa-xmark" aria-hidden="true"></i></button>
+    </div>
 
     <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}" defer></script>
 </body>

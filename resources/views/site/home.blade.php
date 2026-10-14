@@ -99,7 +99,7 @@
                     </div>
                     <div>
                         <div class="stat-value"><span data-count="{{ $yearsOfExperience }}">{{ $yearsOfExperience }}</span>+<small>{{ __('ans') }}</small></div>
-                        <p>{{ __('à concevoir et livrer des plateformes web') }}</p>
+                        <p>{{ __('à concevoir et livrer des plateformes web') }}@if ($experienceSince)<span class="stat-since">{{ __('depuis :date', ['date' => $experienceSince->translatedFormat('F Y')]) }}</span>@endif</p>
                     </div>
                 </div>
             @endif
@@ -233,12 +233,12 @@
                     </a>
                 @endif
 
-                @if (! empty($profile->spoken_languages))
+                @if ($profile->languagesFor())
                     <div class="tile reveal" style="--delay: .12s">
                         <span class="tile-label"><i class="fas fa-language" aria-hidden="true"></i> {{ __('Langues') }}</span>
                         <ul class="list-plain">
-                            @foreach ($profile->spoken_languages as $language)
-                                <li><span>{{ __($language['name']) }}</span><span>{{ __($language['level']) }}</span></li>
+                            @foreach ($profile->languagesFor() as $language)
+                                <li><span>{{ $language['name'] }}</span><span>{{ $language['level'] }}</span></li>
                             @endforeach
                         </ul>
                     </div>
@@ -278,24 +278,32 @@
                     <p>{{ __("De l'interface à la base de données, en passant par la sécurité, les paiements en ligne et le déploiement.") }}</p>
                 </div>
 
-                <div class="bento">
+                {{-- Flèches animées entre les colonnes (site.js) : l'interface appelle le serveur, qui s'appuie sur les outils. --}}
+                <div class="bento skills-flow" data-skills-flow>
                     @foreach (App\Models\Technology::CATEGORIES as $category => $label)
                         @continue(! $skills->has($category))
-                        <div @class(['tile skill-tile reveal', 'span-2' => $loop->first, 'tile-dark' => $category === 'backend']) style="--delay: {{ $loop->index * 0.08 }}s">
+                        <div @class(['tile skill-tile reveal', 'span-2' => $loop->first, 'tile-dark' => $category === 'backend']) style="--delay: {{ $loop->index * 0.08 }}s"
+                            data-flow-label="{{ ['frontend' => __('Appels API'), 'backend' => __('Intégrations')][$category] ?? '' }}">
                             <h3><i class="{{ $skillIcons[$category] }}" aria-hidden="true"></i>{{ __($label) }}</h3>
-                            @foreach ($skills[$category] as $skill)
-                                <div class="skill">
-                                    <div class="skill-top">
-                                        <span>@if ($skill->icon)<i class="{{ $skill->icon }}" aria-hidden="true"></i>@endif{{ $skill->name }}</span>
-                                        @if ($skill->level !== null)<span>{{ $skill->level }} %</span>@endif
-                                    </div>
-                                    @if ($skill->level !== null)
-                                        <div class="skill-bar" role="progressbar" aria-label="{{ $skill->name }}" aria-valuenow="{{ $skill->level }}" aria-valuemin="0" aria-valuemax="100">
-                                            <span style="--level: {{ $skill->level }}%"></span>
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
+                            <ul class="skill-list">
+                                @foreach ($skills[$category] as $skill)
+                                    <li class="skill">
+                                        <span class="skill-info">
+                                            <span class="skill-name">@if ($skill->icon)<i class="{{ $skill->icon }}" aria-hidden="true"></i>@endif{{ $skill->name }}</span>
+                                            {{-- Le nombre de projets n'apparaît qu'à partir de 2 : une preuve, jamais un aveu de faiblesse. --}}
+                                            @if ($skill->projects_count >= App\Models\Technology::MIN_PROJECTS_SHOWN)
+                                                <a href="{{ lroute('projects.index') }}?techno={{ $skill->slug }}" class="skill-projects"
+                                                    title="{{ __('Voir les projets réalisés avec :name', ['name' => $skill->name]) }}">
+                                                    {{ trans_choice(':count projet|:count projets', $skill->projects_count) }}<i class="fas fa-arrow-right" aria-hidden="true"></i>
+                                                </a>
+                                            @endif
+                                        </span>
+                                        @if ($skill->proficiency)
+                                            <span class="skill-level is-{{ $skill->proficiency }}">{{ $skill->proficiencyLabel() }}</span>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
                         </div>
                     @endforeach
                 </div>
@@ -366,26 +374,6 @@
             </div>
         </div>
     </section>
-
-    {{-- ===================== Blog ===================== --}}
-    @if ($posts->isNotEmpty())
-        <section class="section" id="blog">
-            <div class="container">
-                <div class="section-head reveal">
-                    <div>
-                        <span class="eyebrow">{{ __('Blog') }}</span>
-                        <h2>{{ __('Notes de terrain sur Laravel, la sécurité et le SaaS.') }}</h2>
-                    </div>
-                    <a href="{{ lroute('blog.index') }}" class="btn btn-ghost">{{ __('Tous les articles') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></a>
-                </div>
-                <div class="bento">
-                    @foreach ($posts as $post)
-                        <x-site.post-card :post="$post" :wide="$loop->first" :dark="$loop->first" :delay="$loop->index * 0.06" />
-                    @endforeach
-                </div>
-            </div>
-        </section>
-    @endif
 
     {{-- ===================== Parcours ===================== --}}
     @if ($experiences->isNotEmpty() || $educations->isNotEmpty())

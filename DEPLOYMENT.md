@@ -85,7 +85,22 @@ Le seeder ne remplace jamais un contenu déjà modifié depuis l'administration.
 
 **Retour arrière** : restaurez l'archive `sauvegarde-portfolio-*.tar.gz` et le dump SQL.
 
-## 4. Brancher le domaine mahoulolo-sebio.com
+## 4. Tâche planifiée (sauvegardes et nettoyage des données)
+
+Chaque nuit, le site sauvegarde la base et les fichiers (3 h), puis applique les durées de conservation de la politique de confidentialité (3 h 30). Il faut une **tâche Cron** pour que cela fonctionne :
+
+1. hPanel → **Avancé → Tâches Cron** → type « PHP » ou « Personnalisé ».
+2. Commande (adaptez le chemin) :
+   ```
+   /usr/bin/php /home/<utilisateur>/domains/<domaine>/public_html/artisan schedule:run
+   ```
+3. Fréquence : **toutes les minutes** (`* * * * *`).
+
+Dans `.env`, définissez `BACKUP_PASSWORD` (archives chiffrées en AES-256) et **notez-le en lieu sûr**, avec l’`APP_KEY` : sans elles, une sauvegarde est inutilisable.
+
+Vérification : `php artisan portfolio:backup` crée une archive tout de suite ; elle apparaît dans **Administration → Sauvegardes**, d’où vous pouvez aussi la télécharger. Une alerte s’y affiche si aucune sauvegarde n’a été faite depuis 48 h, et un email est envoyé en cas d’échec.
+
+## 5. Brancher le domaine mahoulolo-sebio.com
 
 1. hPanel → **Sites web → Ajouter un domaine** (ou « Changer de domaine » sur le site existant) : `mahoulolo-sebio.com`.
 2. Chez le registraire du domaine : faites pointer les serveurs DNS vers ceux de Hostinger (`ns1.dns-parking.com`, `ns2.dns-parking.com`), ou créez les enregistrements A indiqués dans hPanel.
@@ -93,7 +108,7 @@ Le seeder ne remplace jamais un contenu déjà modifié depuis l'administration.
 4. Vérifiez `APP_URL=https://mahoulolo-sebio.com` dans `.env`, puis lancez `php artisan optimize`.
 5. Soumettez `https://mahoulolo-sebio.com/sitemap.xml` dans Google Search Console.
 
-## 5. Vérifications après déploiement
+## 6. Vérifications après déploiement
 
 - [ ] La page d'accueil, `/projets` et la page d'un projet s'affichent.
 - [ ] Le bouton « Télécharger mon CV » ouvre le PDF.
@@ -101,3 +116,6 @@ Le seeder ne remplace jamais un contenu déjà modifié depuis l'administration.
 - [ ] Une image téléversée sur un projet s'affiche sur le site (sinon, vérifiez `php artisan storage:link`).
 - [ ] `/admin` redirige vers la connexion quand on n'est pas connecté.
 - [ ] `storage/logs/` ne contient pas d'erreur.
+- [ ] La double authentification est activée dans **Mon compte** (codes de secours notés hors ligne).
+- [ ] `php artisan schedule:list` affiche les deux tâches, et une sauvegarde apparaît le lendemain dans **Sauvegardes**.
+- [ ] `https://mahoulolo-sebio.com/.env` renvoie une erreur 403.

@@ -788,3 +788,112 @@ html.theme-transition::view-transition-old(root), html.theme-transition::view-tr
 .prose .prose-embed { position: relative; aspect-ratio: 16 / 9; border-radius: var(--radius); overflow: hidden; border: 1px solid var(--line); background: #000; }
 .prose .prose-embed iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .prose .prose-media figcaption { margin-top: 10px; font-size: var(--fs-small); color: var(--muted); text-align: center; }
+
+/* Protection du contenu : pas de sélection ni de glisser, sauf dans les formulaires */
+body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+input, textarea, select, [contenteditable="true"] { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+img, video, svg { -webkit-user-drag: none; user-drag: none; }
+
+.protect-toast {
+    position: fixed; left: 50%; bottom: 24px; z-index: 120;
+    display: flex; align-items: center; gap: 14px;
+    width: max-content; max-width: calc(100vw - 32px);
+    padding: 14px 14px 14px 16px; border-radius: var(--radius);
+    background: var(--inverse); color: var(--inverse-text);
+    border: 1px solid var(--inverse-line); box-shadow: var(--shadow-hover);
+    font-size: .9rem; line-height: 1.45;
+    opacity: 0; transform: translate(-50%, 18px) scale(.97); pointer-events: none;
+    transition: opacity .3s, transform .45s var(--spring);
+}
+.protect-toast.is-visible { opacity: 1; transform: translate(-50%, 0) scale(1); pointer-events: auto; }
+.protect-toast-icon { display: grid; place-items: center; flex: none; width: 38px; height: 38px; border-radius: 50%; background: var(--accent); color: #FFFFFF; }
+.protect-toast-body { display: grid; gap: 2px; min-width: 0; }
+.protect-toast-body strong { font-family: var(--font-display); font-weight: 600; }
+.protect-toast-body span { color: var(--inverse-muted); }
+.protect-toast-link { flex: none; padding: 7px 12px; border-radius: 999px; background: var(--inverse-line); color: var(--inverse-text); font-size: .82rem; font-weight: 600; text-decoration: none; white-space: nowrap; transition: background-color .2s; }
+.protect-toast-link:hover { background: var(--accent); }
+.protect-toast-close { flex: none; display: grid; place-items: center; width: 30px; height: 30px; border: 0; border-radius: 50%; background: transparent; color: var(--inverse-muted); cursor: pointer; }
+.protect-toast-close:hover { color: var(--inverse-text); background: var(--inverse-line); }
+@media (max-width: 560px) {
+    .protect-toast { bottom: 16px; flex-wrap: wrap; }
+    .protect-toast-body { flex: 1 1 calc(100% - 100px); }
+    .protect-toast-link { margin-left: 52px; }
+}
+
+/* Impression : le contenu n'est pas imprimable, seul un avis s'affiche */
+@media print {
+    body > * { display: none !important; }
+    body::after { content: attr(data-print-notice); display: block; padding: 40px; font: 16px/1.6 var(--font-body); color: #111111; text-align: center; }
+}
+
+/* Pages légales */
+.legal-links { display: grid; gap: 4px; }
+.legal-links a { padding: 9px 12px; border-radius: var(--radius-sm); color: var(--text-soft); font-weight: 500; text-decoration: none; transition: background-color .2s, color .2s; }
+.legal-links a:hover { background: var(--surface-2); color: var(--text); }
+.legal-links a.is-active { background: var(--surface-2); color: var(--text); box-shadow: inset 3px 0 0 var(--accent); }
+.prose.legal { font-size: 1rem; }
+.prose.legal a { color: var(--accent); }
+.form-footer small a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.legal-mail { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; color: var(--accent); font-weight: 600; text-decoration: none; overflow-wrap: anywhere; }
+.legal-mail:hover { text-decoration: underline; }
+
+/* Compétences : niveau (Expert / Confirmé / Notions) et projets réalisés */
+.skill-list { list-style: none; margin: 0; padding: 0; }
+.skill-list .skill { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0; padding: 10px 0; border-top: 1px solid var(--line); font-size: var(--fs-text); }
+.skill-list .skill:first-child { border-top: 0; padding-top: 0; }
+.tile-dark .skill-list .skill { border-color: var(--inverse-line); }
+.skill-name { display: inline-flex; align-items: center; gap: 9px; min-width: 0; font-weight: 500; }
+.skill-name i { width: 16px; text-align: center; color: var(--muted); }
+.tile-dark .skill-name i { color: var(--inverse-muted); }
+.skill-info { display: grid; gap: 2px; min-width: 0; }
+.skill-level { flex-shrink: 0; padding: 3px 10px; border-radius: 999px; font-size: .74rem; font-weight: 600; letter-spacing: .02em; white-space: nowrap; border: 1px solid var(--line-strong); color: var(--text-soft); }
+.skill-level.is-expert { background: var(--accent); border-color: var(--accent); color: #FFFFFF; }
+.skill-level.is-confirmed { background: var(--accent-soft); border-color: transparent; color: var(--accent-text); }
+.tile-dark .skill-level { border-color: var(--inverse-line); color: var(--inverse-muted); }
+.tile-dark .skill-level.is-confirmed { background: rgba(217, 119, 69, .2); color: var(--accent-on-inverse); }
+.tile-dark .skill-level.is-expert { color: #FFFFFF; }
+.skill-projects { display: inline-flex; align-items: center; gap: 6px; justify-self: start; margin-left: 25px; font-size: .76rem; color: var(--muted); text-decoration: none; white-space: nowrap; transition: color .2s; }
+.skill-projects i { font-size: .65rem; transition: transform .25s var(--spring); }
+.skill-projects:hover { color: var(--accent-text); }
+.skill-projects:hover i { transform: translateX(3px); }
+.tile-dark .skill-projects { color: var(--inverse-muted); }
+.tile-dark .skill-projects:hover { color: var(--accent-on-inverse); }
+
+/* Changement de langue sans rechargement : fondu enchaîné, en-tête fixe */
+html.is-switching-lang { cursor: progress; }
+html.is-switching-lang main { transition: opacity .2s; opacity: .55; }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: .35s; }
+.stat-since { display: block; margin-top: 4px; font-size: .8rem; color: var(--inverse-muted); letter-spacing: .02em; }
+
+/* Compétences : flèches en pointillés Frontend → Backend → Outils */
+.skills-flow { position: relative; column-gap: clamp(44px, 5vw, 72px); row-gap: clamp(48px, 5vw, 64px); }
+.skills-links { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; z-index: 2; color: var(--accent); opacity: 0; transition: opacity .6s ease .45s; }
+.skills-flow.is-linked .skills-links, .skills-flow.is-linked .skills-link-label { opacity: 1; }
+.skills-link-track { fill: none; stroke: var(--accent); stroke-opacity: .16; stroke-width: 6; stroke-linecap: round; }
+.skills-link { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-dasharray: 2 7; animation: skills-flow-dash .8s linear infinite; }
+.skills-link-dot { fill: var(--accent); filter: drop-shadow(0 0 4px rgba(217, 119, 69, .7)); }
+/* L'offset décroissant fait avancer les pointillés dans le sens de la flèche (gauche → droite, haut → bas). */
+@keyframes skills-flow-dash { to { stroke-dashoffset: -9; } }
+.skills-link-label {
+    position: absolute; z-index: 3; transform: translate(-50%, calc(-100% - 12px));
+    padding: 3px 9px; border-radius: 999px; white-space: nowrap; pointer-events: none;
+    background: var(--surface); border: 1px dashed var(--accent); color: var(--accent-text);
+    font-size: .68rem; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    box-shadow: var(--shadow); opacity: 0; transition: opacity .6s ease .6s;
+}
+.skills-link-label.is-vertical { transform: translate(14px, -50%); }
+@media (prefers-reduced-motion: reduce) { .skills-link { animation: none; } }
+.skills-link-label.is-upright { writing-mode: vertical-rl; transform: translate(-50%, calc(-100% - 12px)); padding: 9px 3px; }
+
+/* Textes justifiés (alignés à gauche et à droite) sur tout le site.
+   La césure automatique, dans la langue de la page (lang="fr" / "en"), évite
+   les grands espaces entre les mots sur les écrans étroits. Les textes
+   volontairement centrés (légendes, états vides, portrait) ne sont pas touchés. */
+main :is(p, blockquote, li):not(:where(.portrait-id, .empty, figcaption, .form-footer, .chips, .breadcrumb, .page-actions, .skill-list, .list-plain) *, .portrait-id, .empty) {
+    text-align: justify;
+    text-justify: inter-word;
+    -webkit-hyphens: auto;
+    hyphens: auto;
+    hyphenate-limit-chars: 7 3 3;
+    overflow-wrap: break-word;
+}

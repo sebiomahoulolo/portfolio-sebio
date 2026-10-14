@@ -1,4 +1,0 @@
-User-agent: *
-Disallow: /admin
-
-Sitemap: https://mahoulolo-sebio.com/sitemap.xml

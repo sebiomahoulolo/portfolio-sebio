@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Storage;
 
 class Testimonial extends Model
 {
@@ -60,7 +59,7 @@ class Testimonial extends Model
 
     public function avatarUrl(): ?string
     {
-        return $this->avatar_path ? Storage::disk(config('portfolio.media_disk'))->url($this->avatar_path) : null;
+        return $this->avatar_path ? media_url($this->avatar_path) : null;
     }
 
     public function initials(): string

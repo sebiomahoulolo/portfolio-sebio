@@ -30,4 +30,36 @@ return [
     */
     'contact_rate_limit' => 5,
 
+    /*
+    | Codes de validation des outils pour webmasters (valeur « content » de la
+    | balise meta fournie par Google Search Console et Bing Webmaster Tools).
+    */
+    'seo' => [
+        'google_verification' => env('GOOGLE_SITE_VERIFICATION'),
+        'bing_verification' => env('BING_SITE_VERIFICATION'),
+    ],
+
+    /*
+    | Sauvegardes automatiques (commande portfolio:backup, chaque nuit à 3 h).
+    | Un mot de passe chiffre les archives en AES-256 : indispensable si elles
+    | sont téléchargées ou copiées ailleurs.
+    */
+    'backups' => [
+        'path' => storage_path('app/private/backups'),
+        'keep_days' => (int) env('BACKUP_KEEP_DAYS', 7),
+        'keep_minimum' => 3,
+        'password' => env('BACKUP_PASSWORD'),
+    ],
+
+    /*
+    | Durées de conservation annoncées dans la politique de confidentialité,
+    | appliquées chaque nuit par la commande portfolio:prune-data.
+    */
+    'retention' => [
+        'contact_messages_months' => 36,
+        'unpublished_reviews_months' => 6,
+        'page_views_months' => 25,
+        'activity_logs_months' => 12,
+    ],
+
 ];

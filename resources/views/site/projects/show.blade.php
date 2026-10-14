@@ -16,6 +16,7 @@
     :description="$project->translate('seo_description') ?: $project->translate('excerpt')"
     :image="$project->coverUrl()"
     :indexable="$project->is_indexable"
+    :breadcrumbs="[__('Projets') => lroute('projects.index'), $title => lroute('projects.show', ['slug' => $project->slug])]"
     type="article">
 
     <x-slot:head>

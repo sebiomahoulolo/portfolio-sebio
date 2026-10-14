@@ -111,7 +111,7 @@
                 </div>
 
                 <div class="form-footer">
-                    <small>{{ __('Vos informations servent uniquement à répondre à votre demande.') }}</small>
+                    <small>{{ __('Vos informations servent uniquement à répondre à votre demande.') }} <a href="{{ lroute('legal.privacy') }}">{{ __('En savoir plus') }}</a></small>
                     <button type="submit" class="btn btn-primary" data-magnetic data-sending="{{ __('Envoi en cours…') }}">{{ __('Envoyer le message') }} <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
                 </div>
             </form>

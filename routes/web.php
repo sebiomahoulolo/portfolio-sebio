@@ -6,6 +6,7 @@ use App\Http\Controllers\BlogController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\CvController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\LegalController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\ServiceController;
@@ -33,10 +34,12 @@ $publicRoutes = function (array $paths) {
     Route::get('/blog', [BlogController::class, 'index'])->name('blog.index');
     Route::get('/blog/{slug}', [BlogController::class, 'show'])->name('blog.show');
     Route::get($paths['review'], [ReviewController::class, 'create'])->name('reviews.create');
+    Route::get($paths['legal'], [LegalController::class, 'notice'])->name('legal.notice');
+    Route::get($paths['privacy'], [LegalController::class, 'privacy'])->name('legal.privacy');
 };
 
-Route::middleware('locale:fr')->group(fn () => $publicRoutes(['projects' => '/projets', 'review' => '/donner-mon-avis']));
-Route::prefix('en')->name('en.')->middleware('locale:en')->group(fn () => $publicRoutes(['projects' => '/projects', 'review' => '/leave-a-review']));
+Route::middleware('locale:fr')->group(fn () => $publicRoutes(['projects' => '/projets', 'review' => '/donner-mon-avis', 'legal' => '/mentions-legales', 'privacy' => '/confidentialite']));
+Route::prefix('en')->name('en.')->middleware('locale:en')->group(fn () => $publicRoutes(['projects' => '/projects', 'review' => '/leave-a-review', 'legal' => '/legal-notice', 'privacy' => '/privacy']));
 
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:contact')->name('contact.store');
 Route::post('/avis', [ReviewController::class, 'store'])->middleware('throttle:reviews')->name('reviews.store');
@@ -47,6 +50,9 @@ Route::post('/t/{uuid}', [AnalyticsController::class, 'duration'])->whereUuid('u
 // « /cv » est déjà un dossier de public/ (ancien CV) : la route utilise une autre adresse.
 Route::get('/telecharger-cv', CvController::class)->name('cv');
 Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
+// Résumé du site pour les assistants IA (ChatGPT, Perplexity, Claude...).
+Route::get('/llms.txt', [SitemapController::class, 'llms'])->name('llms');
 
 /*
 |--------------------------------------------------------------------------
@@ -56,6 +62,7 @@ Route::get('/sitemap.xml', SitemapController::class)->name('sitemap');
 
 Route::middleware('guest')->group(function () {
     Route::get('/admin/connexion', Auth\Login::class)->name('login');
+    Route::get('/admin/verification', Auth\TwoFactorChallenge::class)->name('two-factor.challenge');
     Route::get('/admin/mot-de-passe-oublie', Auth\ForgotPassword::class)->name('password.request');
     Route::get('/admin/reinitialiser/{token}', Auth\ResetPassword::class)->name('password.reset');
 });
@@ -99,4 +106,5 @@ Route::prefix('admin')
         Route::get('/messages/{message}', Admin\Messages\MessageShow::class)->name('messages.show');
 
         Route::get('/journal', Admin\ActivityLogIndex::class)->name('activity');
+        Route::get('/sauvegardes', Admin\Backups::class)->name('backups');
     });

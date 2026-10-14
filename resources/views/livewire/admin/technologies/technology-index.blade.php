@@ -23,14 +23,11 @@
                     @foreach ($items as $tech)
                         <flux:table.row :key="$tech->id">
                             <flux:table.cell class="font-medium text-ink dark:text-paper">{{ $tech->name }}</flux:table.cell>
-                            <flux:table.cell class="w-48">
-                                @if ($tech->level !== null)
-                                    <div class="flex items-center gap-2">
-                                        <div class="h-1.5 w-24 overflow-hidden rounded-full bg-zinc-200 dark:bg-zinc-700">
-                                            <div class="h-full rounded-full bg-copper" style="width: {{ $tech->level }}%"></div>
-                                        </div>
-                                        <span class="text-xs tabular-nums text-zinc-500">{{ $tech->level }} %</span>
-                                    </div>
+                            <flux:table.cell class="w-36">
+                                @if ($tech->proficiency)
+                                    <flux:badge size="sm" inset="top bottom" :color="['expert' => 'orange', 'confirmed' => 'blue', 'notions' => 'zinc'][$tech->proficiency] ?? 'zinc'">
+                                        {{ App\Models\Technology::PROFICIENCIES[$tech->proficiency] ?? $tech->proficiency }}
+                                    </flux:badge>
                                 @else
                                     <span class="text-xs text-zinc-400">—</span>
                                 @endif
@@ -42,7 +39,14 @@
                                     <flux:badge size="sm" inset="top bottom">Masquée</flux:badge>
                                 @endif
                             </flux:table.cell>
-                            <flux:table.cell class="tabular-nums">{{ $tech->projects_count }}</flux:table.cell>
+                            <flux:table.cell class="tabular-nums">
+                                {{ $tech->projects_count }}
+                                @if ($tech->show_in_skills && $tech->projects_count < App\Models\Technology::MIN_PROJECTS_SHOWN)
+                                    <flux:tooltip content="Le nombre de projets s'affiche sur le site à partir de {{ App\Models\Technology::MIN_PROJECTS_SHOWN }}. Associez cette technologie à vos projets (fiche projet → Technologies).">
+                                        <flux:icon name="information-circle" variant="micro" class="inline text-zinc-400" />
+                                    </flux:tooltip>
+                                @endif
+                            </flux:table.cell>
                             <flux:table.cell class="tabular-nums">{{ $tech->sort_order }}</flux:table.cell>
                             <flux:table.cell align="end">
                                 @can('update', $tech)
@@ -72,7 +76,12 @@
                 @endforeach
             </flux:select>
             <div class="grid gap-4 sm:grid-cols-2">
-                <flux:input wire:model="level" type="number" min="0" max="100" label="Niveau (%)" description="Vide : pas de barre de niveau." />
+                <flux:select wire:model="proficiency" label="Niveau" description="Vide : aucun niveau affiché.">
+                    <flux:select.option value="">—</flux:select.option>
+                    <flux:select.option value="expert">Expert : au quotidien, je peux former</flux:select.option>
+                    <flux:select.option value="confirmed">Confirmé : je livre en autonomie</flux:select.option>
+                    <flux:select.option value="notions">Notions : déjà utilisé</flux:select.option>
+                </flux:select>
                 <flux:input wire:model="sort_order" type="number" min="0" label="Ordre" />
             </div>
             <flux:input wire:model="icon" label="Icône Font Awesome" placeholder="fab fa-laravel" description="Voir fontawesome.com/icons (version gratuite)." />

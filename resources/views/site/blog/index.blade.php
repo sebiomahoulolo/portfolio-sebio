@@ -1,7 +1,8 @@
 <x-layouts.site :profile="$profile"
     :title="__('Blog').($activeTag ? ' · '.$activeTag : '').' — '.$profile->name"
     :description="__('Articles techniques sur Laravel, la sécurité des applications et les plateformes SaaS.')"
-    :indexable="! $activeTag && $posts->currentPage() === 1">
+    :indexable="! $activeTag && $posts->currentPage() === 1"
+    :breadcrumbs="[__('Blog') => lroute('blog.index')]">
 
     <section class="page-head">
         <div class="container bento">

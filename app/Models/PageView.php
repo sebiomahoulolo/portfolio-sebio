@@ -25,7 +25,9 @@ class PageView extends Model
     {
         return (int) Cache::remember('analytics.public-visitors', now()->addMinutes(10), function () {
             // L'empreinte change chaque jour : un visiteur revenu trois jours compte trois fois.
-            return static::query()->distinct()->count('visitor_hash');
+            // Les visiteurs des mesures purgées après 25 mois restent comptés.
+            return static::query()->distinct()->count('visitor_hash')
+                + (int) ProfileSetting::query()->value('archived_visitors');
         });
     }
 }

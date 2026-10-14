@@ -5,6 +5,7 @@
 <x-layouts.site :profile="$profile"
     :title="$title.' — '.$profile->name"
     :description="$service->translate('seo_description') ?: $service->translate('summary')"
+    :breadcrumbs="[__('Services') => lroute('services.index'), $title => lroute('services.show', ['slug' => $service->slug])]"
     type="article">
 
     <x-slot:head>

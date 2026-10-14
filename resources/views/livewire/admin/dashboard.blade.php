@@ -7,6 +7,19 @@
         </x-slot:actions>
     </x-admin.page-header>
 
+    @if (session('two_factor_warning'))
+        <flux:callout variant="warning" icon="key" :heading="session('two_factor_warning')" />
+    @endif
+
+    @unless (auth()->user()->hasTwoFactorEnabled())
+        <flux:callout variant="warning" icon="shield-exclamation" heading="Protégez votre compte avec la double authentification">
+            <flux:callout.text>Aujourd’hui, votre mot de passe suffit pour entrer. Activez un code de vérification sur votre téléphone : cela prend deux minutes.</flux:callout.text>
+            <x-slot name="actions">
+                <flux:button size="sm" :href="route('admin.account')" wire:navigate>Activer maintenant</flux:button>
+            </x-slot>
+        </flux:callout>
+    @endunless
+
     <div @class(['grid gap-4 sm:grid-cols-2', 'xl:grid-cols-5' => $canSeeContacts, 'xl:grid-cols-4' => ! $canSeeContacts])>
         <x-admin.stat-card label="Visiteurs" icon="users" :value="number_format($totalVisitors, 0, ',', ' ')"
             :hint="$visitorsToday.' aujourd’hui · '.$onlineNow.' en ligne'" :href="$canSeeAnalytics ? route('admin.analytics') : null" />

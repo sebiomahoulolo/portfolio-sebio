@@ -1,0 +1,12 @@
+{
+    "name": "Mahoulolo SEBIO — Portfolio",
+    "short_name": "M. SEBIO",
+    "icons": [
+        { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    ],
+    "theme_color": "#D97745",
+    "background_color": "#F5F3EF",
+    "display": "standalone",
+    "start_url": "/"
+}

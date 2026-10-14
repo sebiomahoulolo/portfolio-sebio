@@ -1,5 +1,9 @@
 // Site public — interactions et motion design, sans dépendance.
 (function () {
+// init() branche toutes les interactions sur la page affichée. Elle est relancée
+// après un changement de langue sans rechargement : les écouteurs posés sur
+// document et window reçoivent un « signal » qui permet de les retirer.
+function init(signal) {
     var root = document.documentElement;
     root.classList.remove('no-js');
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -81,8 +85,8 @@
         moveIndicator();
     };
     onScroll();
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', moveIndicator);
+    window.addEventListener('scroll', onScroll, { passive: true, signal: signal });
+    window.addEventListener('resize', moveIndicator, { signal: signal });
     // La barre change de taille en défilant : on recale l'indicateur à la fin de la transition.
     if (header) header.addEventListener('transitionend', moveIndicator);
     if (backToTop) backToTop.addEventListener('click', function () { window.scrollTo({ top: 0, behavior: reduceMotion ? 'auto' : 'smooth' }); });
@@ -110,8 +114,8 @@
         menu.addEventListener('click', function (e) {
             if (e.target.closest('[data-menu-close]') || e.target.closest('a')) setOpen(false);
         });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); });
-        window.addEventListener('resize', function () { if (window.innerWidth > 980) setOpen(false); });
+        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') setOpen(false); }, { signal: signal });
+        window.addEventListener('resize', function () { if (window.innerWidth > 980) setOpen(false); }, { signal: signal });
 
         // Glisser le panneau vers la droite pour le fermer.
         var panel = menu.querySelector('.mobile-menu-panel');
@@ -146,7 +150,7 @@
         ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
         button.appendChild(ripple);
         setTimeout(function () { ripple.remove(); }, 700);
-    });
+    }, { signal: signal });
     if (finePointer && !reduceMotion) {
         document.querySelectorAll('[data-magnetic]').forEach(function (el) {
             el.addEventListener('pointermove', function (e) {
@@ -201,7 +205,7 @@
     };
     window.addEventListener('scroll', function () {
         if (!sweepQueued && pending.length) { sweepQueued = true; requestAnimationFrame(sweep); }
-    }, { passive: true });
+    }, { passive: true, signal: signal });
     if (!('IntersectionObserver' in window)) pending.slice().forEach(reveal);
 
     /* ---------- Fenêtre de code : saisie animée ---------- */
@@ -241,7 +245,8 @@
             } catch (e) { /* fuseau inconnu : valeur serveur conservée */ }
         };
         render();
-        setInterval(render, 15000);
+        var clockTimer = setInterval(render, 15000);
+        signal.addEventListener('abort', function () { clearInterval(clockTimer); });
     }
 
     /* ---------- Lueur qui suit la souris et inclinaison des projets ---------- */
@@ -252,7 +257,7 @@
             var rect = tile.getBoundingClientRect();
             tile.style.setProperty('--mx', (e.clientX - rect.left) + 'px');
             tile.style.setProperty('--my', (e.clientY - rect.top) + 'px');
-        }, { passive: true });
+        }, { passive: true, signal: signal });
 
         document.querySelectorAll('.project-tile').forEach(function (card) {
             card.addEventListener('pointermove', function (e) {
@@ -363,10 +368,289 @@
         document.addEventListener('visibilitychange', function () {
             if (document.visibilityState === 'hidden') flush();
             else visibleSince = Date.now();
+        }, { signal: signal });
+        window.addEventListener('pagehide', flush, { signal: signal });
+        // Changement de langue sans rechargement : la page quittée envoie sa durée.
+        signal.addEventListener('abort', flush);
+    })();
+
+    /* ---------- Protection du contenu ---------- */
+    // Bloque clic droit, copie, sélection, glisser d'images et raccourcis
+    // d'inspection, avec une notification discrète au lieu d'une alerte.
+    // Les champs de formulaire restent utilisables normalement.
+    (function () {
+        var toast = document.querySelector('.protect-toast');
+        if (!toast) return;
+        var text = toast.querySelector('[data-protect-text]');
+        var timer = null;
+        var lastShown = 0;
+
+        var isEditable = function (el) {
+            return !!(el && el.closest && el.closest('input, textarea, select, [contenteditable="true"]'));
+        };
+
+        var hide = function () {
+            toast.classList.remove('is-visible');
+            clearTimeout(timer);
+            timer = setTimeout(function () { toast.hidden = true; }, 300);
+        };
+
+        var notify = function (kind) {
+            var now = Date.now();
+            if (now - lastShown < 600 && !toast.hidden) return; // évite le clignotement
+            lastShown = now;
+            text.textContent = toast.getAttribute('data-msg-' + kind) || toast.getAttribute('data-msg-copy');
+            clearTimeout(timer);
+            toast.hidden = false;
+            requestAnimationFrame(function () { toast.classList.add('is-visible'); });
+            timer = setTimeout(hide, 4200);
+        };
+
+        toast.querySelector('[data-protect-close]').addEventListener('click', hide);
+
+        document.addEventListener('contextmenu', function (e) {
+            if (isEditable(e.target)) return;
+            e.preventDefault();
+            notify(e.target.closest && e.target.closest('img, picture, video, .media') ? 'image' : 'menu');
+        }, { signal: signal });
+
+        ['copy', 'cut'].forEach(function (type) {
+            document.addEventListener(type, function (e) {
+                if (isEditable(e.target)) return;
+                e.preventDefault();
+                notify('copy');
+            }, { signal: signal });
         });
-        window.addEventListener('pagehide', flush);
+
+        document.addEventListener('selectstart', function (e) {
+            if (!isEditable(e.target)) e.preventDefault();
+        }, { signal: signal });
+
+        document.addEventListener('dragstart', function (e) {
+            if (e.target.closest && e.target.closest('img, a, video')) {
+                e.preventDefault();
+                notify('image');
+            }
+        }, { signal: signal });
+
+        document.addEventListener('keydown', function (e) {
+            var key = (e.key || '').toLowerCase();
+            var mod = e.ctrlKey || e.metaKey;
+            var devtools = key === 'f12' || (mod && e.shiftKey && ['i', 'j', 'c', 'k'].indexOf(key) !== -1) || (e.metaKey && e.altKey && ['i', 'j', 'c', 'u'].indexOf(key) !== -1);
+            var blocked = mod && !e.shiftKey && ['u', 's', 'p'].indexOf(key) !== -1;
+            var copying = mod && !e.shiftKey && ['c', 'x', 'a'].indexOf(key) !== -1 && !isEditable(e.target);
+            if (devtools || blocked || copying) {
+                e.preventDefault();
+                notify(copying ? 'copy' : 'keys');
+            }
+        }, { signal: signal });
+    })();
+
+    /* ---------- Compétences : flèches en pointillés entre les colonnes ---------- */
+    // Frontend → Backend → Outils. Les flèches suivent la disposition réelle :
+    // horizontales quand les cartes sont côte à côte, verticales quand elles
+    // s'empilent (tablette, mobile). Les positions viennent de offsetLeft/Top,
+    // insensibles aux animations d'apparition des cartes.
+    (function () {
+        var flow = document.querySelector('[data-skills-flow]');
+        if (!flow) return;
+        var NS = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('class', 'skills-links');
+        svg.setAttribute('aria-hidden', 'true');
+        svg.innerHTML = '<defs><marker id="skills-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1 L9 5 L1 9" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>';
+        flow.appendChild(svg);
+        var labels = [];
+
+        var draw = function () {
+            var tiles = Array.prototype.slice.call(flow.querySelectorAll(':scope > .skill-tile'));
+            Array.prototype.slice.call(svg.querySelectorAll('g')).forEach(function (g) { g.remove(); });
+            labels.forEach(function (label) { label.remove(); });
+            labels = [];
+            svg.setAttribute('viewBox', '0 0 ' + flow.offsetWidth + ' ' + flow.offsetHeight);
+
+            for (var i = 0; i < tiles.length - 1; i++) {
+                var a = tiles[i], b = tiles[i + 1];
+                var ar = { l: a.offsetLeft, t: a.offsetTop, r: a.offsetLeft + a.offsetWidth, b: a.offsetTop + a.offsetHeight };
+                var br = { l: b.offsetLeft, t: b.offsetTop, r: b.offsetLeft + b.offsetWidth, b: b.offsetTop + b.offsetHeight };
+                var x1, y1, x2, y2, vertical;
+                if (br.l >= ar.r - 1) {
+                    // Côte à côte : de bord droit à bord gauche, à mi-hauteur commune.
+                    y1 = y2 = Math.round((Math.max(ar.t, br.t) + Math.min(ar.b, br.b)) / 2);
+                    x1 = ar.r + 6; x2 = br.l - 6; vertical = false;
+                } else if (br.t >= ar.b - 1) {
+                    // Empilées : du bas vers le haut de la carte suivante.
+                    x1 = x2 = Math.round((Math.max(ar.l, br.l) + Math.min(ar.r, br.r)) / 2);
+                    y1 = ar.b + 6; y2 = br.t - 6; vertical = true;
+                } else {
+                    continue;
+                }
+                if (Math.abs(x2 - x1) + Math.abs(y2 - y1) < 16) continue;
+
+                var d = 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2;
+                var g = document.createElementNS(NS, 'g');
+                g.innerHTML = '<path class="skills-link-track" d="' + d + '"/>'
+                    + '<path class="skills-link" d="' + d + '" marker-end="url(#skills-arrow)"/>'
+                    + (reduceMotion ? '' : '<circle class="skills-link-dot" r="3.5"><animateMotion dur="2.2s" repeatCount="indefinite" path="' + d + '"/></circle>');
+                svg.appendChild(g);
+
+                var text = a.getAttribute('data-flow-label');
+                if (text) {
+                    var label = document.createElement('span');
+                    label.className = 'skills-link-label' + (vertical ? ' is-vertical' : '');
+                    label.textContent = text;
+                    label.style.left = ((x1 + x2) / 2) + 'px';
+                    label.style.top = ((y1 + y2) / 2) + 'px';
+                    flow.appendChild(label);
+                    labels.push(label);
+                    // Espace trop étroit entre deux cartes côte à côte : libellé à la verticale,
+                    // pour ne jamais recouvrir le contenu des cartes.
+                    if (!vertical && label.offsetWidth > (br.l - ar.r) + 36) label.classList.add('is-upright');
+                }
+            }
+        };
+
+        draw();
+        if ('ResizeObserver' in window) {
+            var resize = new ResizeObserver(function () { draw(); });
+            resize.observe(flow);
+            signal.addEventListener('abort', function () { resize.disconnect(); });
+        } else {
+            window.addEventListener('resize', draw, { signal: signal });
+        }
+        // Les flèches apparaissent quand la section entre à l'écran.
+        if ('IntersectionObserver' in window) {
+            var seen = new IntersectionObserver(function (entries) {
+                if (entries[0].isIntersecting) { flow.classList.add('is-linked'); seen.disconnect(); }
+            }, { threshold: 0.25 });
+            seen.observe(flow);
+            signal.addEventListener('abort', function () { seen.disconnect(); });
+        } else {
+            flow.classList.add('is-linked');
+        }
     })();
 
     var year = document.querySelector('[data-year]');
     if (year) year.textContent = new Date().getFullYear();
+}
+
+var controller = new AbortController();
+init(controller.signal);
+
+/* ---------- Changement de langue sans rechargement ---------- */
+// Le clic sur FR / EN récupère la page traduite en arrière-plan, puis remplace
+// le contenu avec un fondu, à la même position de lecture. L'adresse change
+// (/ ↔ /en) : le bouton Précédent, le partage et le référencement restent justes.
+// En cas de problème (réseau, ancien navigateur), on charge simplement la page.
+(function () {
+    if (!window.fetch || !window.DOMParser || !window.history.pushState) return;
+
+    // Balises du <head> propres à chaque langue (titre, SEO, partage, données structurées).
+    var HEAD_TAGS = 'meta[name="description"], meta[name="robots"], meta[name="author"], link[rel="canonical"], link[rel="alternate"][hreflang], meta[property^="og:"], meta[property^="article:"], meta[name^="twitter:"], script[type="application/ld+json"]';
+    var pending = null;
+    var shownPath = location.pathname;
+
+    history.replaceState({ page: true }, '', location.href);
+
+    // Les blocs déjà apparus et les compteurs déjà animés restent en place :
+    // changer de langue ne rejoue pas les animations d'arrivée.
+    var keepRevealed = function (doc) {
+        [['.reveal', 'reveal'], ['[data-count]', 'count'], ['[data-code]', 'code']].forEach(function (pair) {
+            var before = document.querySelectorAll(pair[0]);
+            var after = doc.querySelectorAll(pair[0]);
+            if (before.length !== after.length) return;
+            after.forEach(function (el, i) {
+                if (!before[i].classList.contains('is-visible')) return;
+                el.classList.add('is-visible');
+                if (pair[1] === 'count') el.removeAttribute('data-count');
+                if (pair[1] === 'code') {
+                    var source = el.querySelector('template');
+                    if (source) el.innerHTML = source.innerHTML.trim();
+                    el.removeAttribute('data-code');
+                }
+            });
+        });
+    };
+
+    var swapHead = function (doc) {
+        document.title = doc.title;
+        document.documentElement.lang = doc.documentElement.lang;
+        document.head.querySelectorAll(HEAD_TAGS).forEach(function (el) { el.remove(); });
+        var anchor = document.head.querySelector('link[rel="icon"]');
+        doc.head.querySelectorAll(HEAD_TAGS).forEach(function (el) {
+            document.head.insertBefore(document.importNode(el, true), anchor);
+        });
+    };
+
+    var load = function (url, push) {
+        if (pending) pending.abort();
+        pending = new AbortController();
+        var progress = (window.scrollY || 0) / Math.max(1, document.documentElement.scrollHeight - window.innerHeight);
+        document.documentElement.classList.add('is-switching-lang');
+
+        fetch(url, { credentials: 'same-origin', headers: { 'Accept': 'text/html' }, signal: pending.signal })
+            .then(function (response) {
+                var type = response.headers.get('Content-Type') || '';
+                if (!response.ok || type.indexOf('text/html') === -1) throw new Error('page indisponible');
+                return response.text().then(function (html) { return { html: html, url: response.url || url }; });
+            })
+            .then(function (result) {
+                var doc = new DOMParser().parseFromString(result.html, 'text/html');
+                if (!doc.body || !doc.querySelector('.site-header')) throw new Error('page inattendue');
+                keepRevealed(doc);
+
+                var apply = function () {
+                    document.documentElement.classList.remove('is-switching-lang');
+                    controller.abort();
+                    swapHead(doc);
+                    document.documentElement.classList.remove('menu-open');
+                    document.body.replaceWith(document.adoptNode(doc.body));
+                    if (push) history.pushState({ page: true }, '', result.url);
+                    shownPath = location.pathname;
+                    var max = document.documentElement.scrollHeight - window.innerHeight;
+                    window.scrollTo(0, Math.round(progress * Math.max(0, max)));
+                    controller = new AbortController();
+                    init(controller.signal);
+                };
+
+                var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+                if (document.startViewTransition && !reduce) {
+                    document.startViewTransition(apply).finished.finally(function () {
+                        document.documentElement.classList.remove('is-switching-lang');
+                    });
+                } else {
+                    apply();
+                    document.documentElement.classList.remove('is-switching-lang');
+                }
+            })
+            .catch(function (error) {
+                if (error && error.name === 'AbortError') return;
+                window.location.href = url;
+            });
+    };
+
+    document.addEventListener('click', function (e) {
+        var link = e.target.closest && e.target.closest('.lang-switch a[hreflang]');
+        if (!link || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        e.preventDefault();
+        if (link.classList.contains('is-current')) return;
+
+        // Retour immédiat : la pastille glisse vers la langue choisie pendant le chargement.
+        var group = link.closest('.lang-switch');
+        var links = group.querySelectorAll('a[hreflang]');
+        links.forEach(function (a, i) {
+            var on = a === link;
+            a.classList.toggle('is-current', on);
+            if (on) { a.setAttribute('aria-current', 'true'); group.setAttribute('data-current', i); } else { a.removeAttribute('aria-current'); }
+        });
+
+        load(link.href, true);
+    });
+
+    // Précédent / Suivant entre les deux langues.
+    window.addEventListener('popstate', function (e) {
+        // Une ancre (#contact) ne change pas de page : seul un changement d'adresse recharge le contenu.
+        if (e.state && e.state.page && location.pathname !== shownPath) load(location.href, false);
+    });
+})();
 })();

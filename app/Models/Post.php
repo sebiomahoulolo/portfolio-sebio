@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Support\Facades\Storage;
 
 class Post extends Model
 {
@@ -44,7 +43,7 @@ class Post extends Model
 
     public function coverUrl(): ?string
     {
-        return $this->cover_image ? Storage::disk(config('portfolio.media_disk'))->url($this->cover_image) : null;
+        return $this->cover_image ? media_url($this->cover_image) : null;
     }
 
     /**

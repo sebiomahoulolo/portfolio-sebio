@@ -22,7 +22,7 @@ class TechnologyIndex extends Component
 
     public string $category = 'backend';
 
-    public ?int $level = null;
+    public string $proficiency = '';
 
     public string $icon = '';
 
@@ -61,7 +61,8 @@ class TechnologyIndex extends Component
 
         $this->resetValidation();
         $this->editingId = $technology->id;
-        $this->fill($technology->only('name', 'category', 'level', 'sort_order', 'show_in_skills'));
+        $this->fill($technology->only('name', 'category', 'sort_order', 'show_in_skills'));
+        $this->proficiency = (string) $technology->proficiency;
         $this->icon = (string) $technology->icon;
 
         Flux::modal('technology-form')->show();
@@ -72,12 +73,12 @@ class TechnologyIndex extends Component
         $validated = $this->validate([
             'name' => ['required', 'string', 'max:80'],
             'category' => ['required', Rule::in(array_keys(Technology::CATEGORIES))],
-            'level' => ['nullable', 'integer', 'between:0,100'],
+            'proficiency' => ['nullable', Rule::in(array_keys(Technology::PROFICIENCIES))],
             // Classes Font Awesome uniquement, ex. « fab fa-laravel ».
             'icon' => ['nullable', 'string', 'max:60', 'regex:/^(fa[bsr]?|fa-(solid|brands|regular))( fa-[a-z0-9-]+)+$/'],
             'show_in_skills' => ['boolean'],
             'sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
-        ], [], ['name' => 'nom', 'level' => 'niveau', 'icon' => 'icône']);
+        ], [], ['name' => 'nom', 'proficiency' => 'niveau', 'icon' => 'icône']);
 
         $slug = Str::slug($validated['name']);
         $duplicate = Technology::where('slug', $slug)->when($this->editingId, fn ($q) => $q->whereKeyNot($this->editingId))->exists();
@@ -89,6 +90,7 @@ class TechnologyIndex extends Component
         }
 
         $validated['icon'] = $validated['icon'] ?: null;
+        $validated['proficiency'] = $validated['proficiency'] ?: null;
 
         if ($this->editingId) {
             $technology = Technology::findOrFail($this->editingId);
@@ -121,7 +123,7 @@ class TechnologyIndex extends Component
     private function resetForm(): void
     {
         $this->resetValidation();
-        $this->reset('editingId', 'name', 'level', 'icon');
+        $this->reset('editingId', 'name', 'proficiency', 'icon');
         $this->category = 'backend';
         $this->show_in_skills = true;
         $this->sort_order = (int) Technology::max('sort_order') + 1;

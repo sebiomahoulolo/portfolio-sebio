@@ -43,6 +43,20 @@ class Login extends Component
 
         RateLimiter::clear($this->throttleKey());
 
+        // Double authentification : le mot de passe ne suffit pas, on demande
+        // le code de l'application avant d'ouvrir la session.
+        if ($user->hasTwoFactorEnabled()) {
+            session()->put('login.two_factor', [
+                'id' => $user->getKey(),
+                'remember' => $this->remember,
+                'expires_at' => now()->addMinutes(5)->getTimestamp(),
+            ]);
+
+            $this->redirectRoute('two-factor.challenge', navigate: true);
+
+            return;
+        }
+
         Auth::login($user, $this->remember);
         session()->regenerate();
 

@@ -34,7 +34,8 @@ class ProfileEditor extends Component
     /** @var array<string, string> badges d'expertise, séparés par des virgules, par langue */
     public array $expertise = [];
 
-    public string $languages = '';
+    /** Langues parlées, une par ligne « Langue : niveau », par langue du site. */
+    public array $languages = [];
 
     public $avatar = null;
 
@@ -63,9 +64,12 @@ class ProfileEditor extends Component
             $this->interests[$code] = implode(', ', ($profile->interests ?? [])[$code] ?? []);
             $this->expertise[$code] = implode(', ', ($profile->expertise ?? [])[$code] ?? []);
         }
-        $this->languages = collect($profile->spoken_languages ?? [])
-            ->map(fn ($l) => $l['name'].' : '.$l['level'])
-            ->implode("\n");
+        // La version anglaise est préremplie avec la traduction automatique : il suffit de la relire.
+        foreach (array_keys($locales) as $code) {
+            $this->languages[$code] = collect($profile->languagesFor($code))
+                ->map(fn ($l) => trim($l['name'].' : '.$l['level'], ' :'))
+                ->implode("\n");
+        }
     }
 
     public function save(): void
@@ -85,7 +89,7 @@ class ProfileEditor extends Component
             'expertise.*' => ['nullable', 'string', 'max:500'],
             'form.years_experience' => ['nullable', 'integer', 'between:0,60'],
             'form.tagline.*' => ['nullable', 'string', 'max:160'],
-            'languages' => ['nullable', 'string', 'max:500'],
+            'languages.*' => ['nullable', 'string', 'max:500'],
             'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:3072'],
             'cv' => ['nullable', 'file', 'mimes:pdf', 'mimetypes:application/pdf', 'max:5120'],
             'ogImage' => ['nullable', 'image', 'mimes:jpg,jpeg,png', 'max:3072'],
@@ -108,6 +112,8 @@ class ProfileEditor extends Component
 
         $data = collect($this->form)
             ->map(fn ($value) => is_array($value) ? array_filter($value, fn ($v) => filled($v)) : (blank($value) ? null : $value))
+            // « plus de 3 ans » devient « plus de {ans} ans » : le texte suit le parcours.
+            ->map(fn ($value) => is_array($value) ? array_map(fn ($v) => is_string($v) ? ProfileSetting::withYearsPlaceholder($v) : $v, $value) : $value)
             ->all();
         $data['is_available'] = (bool) $this->form['is_available'];
         $data['social_links'] = array_filter($this->social, fn ($v) => filled($v));
@@ -117,11 +123,14 @@ class ProfileEditor extends Component
             ->all();
         $data['interests'] = $toList($this->interests);
         $data['expertise'] = $toList($this->expertise);
-        $data['spoken_languages'] = collect(preg_split('/\R/', $this->languages))
-            ->map(fn ($line) => array_map('trim', explode(':', $line, 2)))
-            ->filter(fn ($parts) => filled($parts[0]))
-            ->map(fn ($parts) => ['name' => $parts[0], 'level' => $parts[1] ?? ''])
-            ->values()
+        $data['spoken_languages'] = collect($this->languages)
+            ->map(fn ($text) => collect(preg_split('/\R/', (string) $text))
+                ->map(fn ($line) => array_map('trim', explode(':', $line, 2)))
+                ->filter(fn ($parts) => filled($parts[0]))
+                ->map(fn ($parts) => ['name' => $parts[0], 'level' => $parts[1] ?? ''])
+                ->values()
+                ->all())
+            ->filter()
             ->all();
 
         $disk = Storage::disk(config('portfolio.media_disk'));

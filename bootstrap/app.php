@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,7 +17,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // aux en-têtes X-Forwarded-* pour détecter correctement HTTPS et l'IP.
         $middleware->trustProxies(at: '*');
 
-        $middleware->alias(['locale' => \App\Http\Middleware\SetLocale::class]);
+        $middleware->append(SecurityHeaders::class);
+
+        $middleware->alias(['locale' => SetLocale::class]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
         $middleware->redirectUsersTo(fn () => route('admin.dashboard'));

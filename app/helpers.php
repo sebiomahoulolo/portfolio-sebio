@@ -44,3 +44,15 @@ if (! function_exists('alternate_url')) {
         return $query ? "{$url}?{$query}" : $url;
     }
 }
+
+if (! function_exists('media_url')) {
+    /**
+     * Adresse publique d'un fichier téléversé (images, CV...). Elle suit l'adresse
+     * réellement utilisée (domaine, www, https, port) plutôt qu'APP_URL : un écart
+     * entre les deux ne casse plus aucune image.
+     */
+    function media_url(?string $path): ?string
+    {
+        return filled($path) ? asset('storage/'.ltrim($path, '/')) : null;
+    }
+}

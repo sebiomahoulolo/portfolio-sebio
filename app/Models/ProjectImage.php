@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
 
 class ProjectImage extends Model
 {
@@ -22,6 +21,6 @@ class ProjectImage extends Model
 
     public function url(): string
     {
-        return Storage::disk(config('portfolio.media_disk'))->url($this->path);
+        return media_url($this->path);
     }
 }

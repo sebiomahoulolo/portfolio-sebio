@@ -5,15 +5,38 @@
 
     RewriteEngine On
 
-    RewriteCond %{REQUEST_FILENAME} -d [OR] 
+    # --- Sécurité : le code et la configuration ne sont jamais servis directement ---
+
+    # Fichiers cachés (.env, .git, .htaccess...), sauf .well-known (certificats SSL)
+    RewriteRule (^|/)\.(?!well-known(/|$)) - [F,L]
+
+    # Dossiers internes de Laravel (storage/ public reste accessible pour les médias)
+    RewriteRule ^(app|bootstrap|config|database|lang|resources|routes|scripts|tests|vendor|node_modules|storage/(app|framework|logs))(/|$) - [F,L]
+
+    # Fichiers sensibles à la racine
+    RewriteRule ^(artisan|default\.php|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|vite\.config\.js)$ - [F,L]
+
+    # Extensions jamais publiques
+    RewriteRule \.(env|log|sql|sqlite|md|sh|bak|old|swp|lock|ya?ml|ini|tar|gz|zip)$ - [F,L]
+
+    # --- Routage vers public/ ---
+    RewriteCond %{REQUEST_FILENAME} -d [OR]
     RewriteCond %{REQUEST_FILENAME} -f
     RewriteRule ^ ^$1 [N]
-    
 
-    RewriteCond %{REQUEST_URI} (\.\w+$) [NC] 
+    RewriteCond %{REQUEST_URI} (\.\w+$) [NC]
     RewriteRule ^(.*)$ public/$1
 
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ server.php
+</IfModule>
+
+# Filet de sécurité si mod_rewrite est indisponible
+<FilesMatch "^\.|\.(env|log|sql|sqlite|md|sh|bak|lock)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always unset X-Powered-By
 </IfModule>

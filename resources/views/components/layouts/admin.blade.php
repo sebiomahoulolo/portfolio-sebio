@@ -18,7 +18,11 @@
         'Relation client' => [
             ['admin.messages.index', 'envelope', 'Messages', 'manage-contacts'],
             ['admin.testimonials.index', 'star', 'Avis et recommandations', null],
+        ],
+        'Sécurité' => [
+            ['admin.account', 'shield-check', 'Mon compte', null],
             ['admin.activity', 'clipboard-document-list', "Journal d'activité", 'view-activity'],
+            ['admin.backups', 'archive-box', 'Sauvegardes', 'manage-settings'],
         ],
     ];
 
@@ -35,6 +39,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex, nofollow">
     <title>{{ $title ? $title.' · ' : '' }}Administration</title>
+    @include('partials.favicons')
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" referrerpolicy="no-referrer">

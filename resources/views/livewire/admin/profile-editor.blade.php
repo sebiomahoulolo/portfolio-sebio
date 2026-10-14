@@ -15,7 +15,8 @@
                 <x-admin.translated-field model="form.tagline" label="Accroche principale"
                     description="Grand titre de l'accueil. Deux phrases : la seconde s'affiche en couleur (ex. « Je bâtis des SaaS sécurisés. Je forme les devs de demain. »)." />
                 <x-admin.translated-field model="expertise" label="Badges d'expertise" description="Séparés par des virgules (ex. Laravel, SaaS multi-tenant, SSO & RBAC)." />
-                <x-admin.translated-field model="form.intro" label="Accroche (en-tête du site)" type="textarea" :rows="4" />
+                <x-admin.translated-field model="form.intro" label="Accroche (en-tête du site)" type="textarea" :rows="4"
+                    description="Écrivez {ans} pour afficher vos années d’expérience, calculées depuis votre premier poste (ex. « depuis plus de {ans} ans »). Valable dans tous les textes du profil." />
                 <x-admin.translated-field model="form.about" label="À propos" type="textarea" :rows="6" />
                 <x-admin.translated-field model="form.objective" label="Mission" type="textarea" :rows="3" />
                 <x-admin.translated-field model="form.current_position" label="Poste actuel" />
@@ -29,7 +30,8 @@
 
             <flux:card class="flex flex-col gap-5">
                 <flux:heading>Langues et centres d'intérêt</flux:heading>
-                <flux:textarea wire:model="languages" label="Langues parlées" rows="4" description="Une langue par ligne, au format « Langue : niveau »." />
+                <x-admin.translated-field model="languages" label="Langues parlées" type="textarea" :rows="4"
+                    description="Une langue par ligne, au format « Langue : niveau ». Onglet EN : la version affichée sur le site en anglais (ex. « French : Native »)." />
                 <x-admin.translated-field model="interests" label="Centres d'intérêt" description="Séparés par des virgules." />
             </flux:card>
 
@@ -78,8 +80,23 @@
                     @endif
                 </div>
                 <flux:switch wire:model="form.is_available" label="Disponible pour de nouveaux projets" align="left" />
-                <flux:input wire:model="form.years_experience" type="number" min="0" max="60" label="Années d'expérience affichées"
-                    description="Vide : calculé automatiquement depuis le parcours." />
+                @if ($since = $profile->careerStart())
+                    {{-- Le parcours fait foi : le chiffre affiché est calculé, pas saisi. --}}
+                    <div class="flex flex-col gap-2">
+                        <flux:label>Années d'expérience affichées</flux:label>
+                        <div class="flex items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 px-3 py-2.5 dark:border-zinc-700 dark:bg-zinc-900">
+                            <span class="text-lg font-semibold tabular-nums text-ink dark:text-paper">{{ $profile->experienceYears() }}+ ans</span>
+                            <flux:badge size="sm" color="green" icon="arrow-path">Automatique</flux:badge>
+                        </div>
+                        <flux:text class="text-sm">
+                            Calculé depuis votre premier poste ({{ $since->translatedFormat('F Y') }}) dans
+                            <flux:link :href="route('admin.career.index')" wire:navigate>Parcours</flux:link>. Il augmente seul chaque année, y compris dans les textes qui contiennent {ans}.
+                        </flux:text>
+                    </div>
+                @else
+                    <flux:input wire:model="form.years_experience" type="number" min="0" max="60" label="Années d'expérience affichées"
+                        description="Aucun poste dans le Parcours : cette valeur est affichée. Ajoutez vos postes pour un calcul automatique." />
+                @endif
             </flux:card>
 
             <flux:card class="flex flex-col gap-5">
