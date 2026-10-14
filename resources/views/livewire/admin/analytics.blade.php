@@ -101,7 +101,7 @@
                         @foreach ($b['pages'] as $page)
                             <flux:table.row :key="$page->path">
                                 <flux:table.cell class="max-w-md">
-                                    <div class="truncate font-medium text-ink dark:text-paper">{{ $page->title ?: $page->path }}</div>
+                                    <div class="truncate font-medium text-ink dark:text-paper">{{ Analytics::pageLabel($page->path, $page->title) }}</div>
                                     <a href="{{ url($page->path) }}" target="_blank" class="truncate text-xs text-zinc-500 hover:text-copper-dark">{{ $page->path }}</a>
                                 </flux:table.cell>
                                 <flux:table.cell align="end" class="tabular-nums">{{ $page->total }}</flux:table.cell>
@@ -175,35 +175,54 @@
         </flux:card>
     </div>
 
-    {{-- Dernières visites --}}
+    {{-- Dernières visites : une ligne par visite, avec le parcours dans l'ordre --}}
     <flux:card class="flex flex-col gap-4">
-        <flux:heading>Dernières pages consultées</flux:heading>
+        <div>
+            <flux:heading>Dernières visites</flux:heading>
+            <flux:text class="mt-1 text-sm">Une ligne par visite : les pages consultées dans l'ordre et le temps total passé sur le site.</flux:text>
+        </div>
         @if ($recent->isEmpty())
             <flux:text>Aucune visite sur cette période.</flux:text>
         @else
             <flux:table :paginate="$recent">
                 <flux:table.columns>
                     <flux:table.column>Date</flux:table.column>
-                    <flux:table.column>Page</flux:table.column>
+                    <flux:table.column>Parcours</flux:table.column>
                     <flux:table.column>Pays</flux:table.column>
                     <flux:table.column>Appareil</flux:table.column>
                     <flux:table.column>Provenance</flux:table.column>
-                    <flux:table.column align="end">Durée</flux:table.column>
+                    <flux:table.column align="end">Durée totale</flux:table.column>
                 </flux:table.columns>
                 <flux:table.rows>
-                    @foreach ($recent as $view)
-                        <flux:table.row :key="$view->id">
-                            <flux:table.cell class="whitespace-nowrap text-sm text-zinc-500">{{ $view->created_at->format('d/m/Y H:i') }}</flux:table.cell>
-                            <flux:table.cell class="max-w-xs truncate">{{ $view->path }}</flux:table.cell>
-                            <flux:table.cell>{{ Analytics::countryName($view->country_code) }}</flux:table.cell>
-                            <flux:table.cell>
+                    @foreach ($recent as $visit)
+                        <flux:table.row :key="$visit->key">
+                            <flux:table.cell class="whitespace-nowrap align-top text-sm text-zinc-500">
+                                {{ $visit->started_at->format('d/m/Y H:i') }}
+                                @if ($visit->ended_at->format('H:i') !== $visit->started_at->format('H:i'))
+                                    <div class="text-xs">→ {{ $visit->ended_at->format('H:i') }}</div>
+                                @endif
+                            </flux:table.cell>
+                            <flux:table.cell class="min-w-64 max-w-xl align-top">
+                                <div class="mb-1.5 text-xs font-medium text-zinc-500">{{ $visit->pages_count }} {{ $visit->pages_count > 1 ? 'pages' : 'page' }}</div>
+                                <div class="flex flex-wrap items-center gap-1">
+                                    @foreach ($visit->pages as $page)
+                                        @unless ($loop->first)<flux:icon.chevron-right variant="micro" class="text-zinc-400" />@endunless
+                                        <a href="{{ url($page['path']) }}" target="_blank" title="{{ $page['path'] }}{{ $page['duration'] ? ' · '.Analytics::duration($page['duration']) : '' }}"
+                                            class="whitespace-nowrap rounded-md bg-zinc-100 px-2 py-0.5 text-xs font-medium text-ink hover:bg-copper hover:text-white dark:bg-zinc-700 dark:text-paper">{{ $page['label'] }}@if ($page['times'] > 1)<span class="ms-1 text-zinc-500">×{{ $page['times'] }}</span>@endif</a>
+                                    @endforeach
+                                </div>
+                            </flux:table.cell>
+                            <flux:table.cell class="align-top">{{ Analytics::countryName($visit->country) }}</flux:table.cell>
+                            <flux:table.cell class="align-top">
                                 <span class="inline-flex items-center gap-1.5 text-sm">
-                                    <flux:icon :name="$deviceIcons[$view->device] ?? 'computer-desktop'" variant="micro" class="text-zinc-400" />
-                                    {{ $view->browser }} · {{ $view->os }}
+                                    <flux:icon :name="$deviceIcons[$visit->device] ?? 'computer-desktop'" variant="micro" class="text-zinc-400" />
+                                    {{ $visit->browser }} · {{ $visit->os }}
                                 </span>
                             </flux:table.cell>
-                            <flux:table.cell class="text-sm text-zinc-500">{{ $view->referrer_host ?? 'Direct' }}</flux:table.cell>
-                            <flux:table.cell align="end" class="tabular-nums">{{ $view->duration_seconds ? Analytics::duration($view->duration_seconds) : '—' }}</flux:table.cell>
+                            <flux:table.cell class="align-top text-sm text-zinc-500">{{ $visit->referrer ?? 'Direct' }}</flux:table.cell>
+                            <flux:table.cell align="end" class="align-top tabular-nums">
+                                {{ $visit->duration ? Analytics::duration($visit->duration) : '—' }}
+                            </flux:table.cell>
                         </flux:table.row>
                     @endforeach
                 </flux:table.rows>

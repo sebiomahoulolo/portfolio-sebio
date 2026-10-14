@@ -143,6 +143,89 @@ class Analytics extends Component
         ];
     }
 
+    /**
+     * Nom lisible d'une page : « Accueil » plutôt que « / », le titre du projet
+     * ou de l'article plutôt que son adresse. « (EN) » signale la version anglaise.
+     */
+    public static function pageLabel(string $path, ?string $title = null): string
+    {
+        $english = $path === '/en' || str_starts_with($path, '/en/');
+        $local = $english ? (substr($path, 3) ?: '/') : $path;
+
+        $names = [
+            '/' => 'Accueil',
+            '/projets' => 'Projets', '/projects' => 'Projets',
+            '/services' => 'Services',
+            '/blog' => 'Blog',
+            '/donner-mon-avis' => 'Donner mon avis', '/leave-a-review' => 'Donner mon avis',
+            '/mentions-legales' => 'Mentions légales', '/legal-notice' => 'Mentions légales',
+            '/confidentialite' => 'Confidentialité', '/privacy' => 'Confidentialité',
+        ];
+
+        // Pages détail : titre de la page, sans le nom du site ajouté à la fin.
+        $label = $names[rtrim($local, '/') ?: '/']
+            ?? (filled($title) ? trim(preg_split('/\s+—\s+/u', $title)[0]) : $local);
+
+        return $english ? $label.' (EN)' : $label;
+    }
+
+    /**
+     * Dernières visites, une ligne par visite (même session) : pages dans l'ordre,
+     * durée cumulée, origine et appareil de la première page.
+     */
+    private function recentVisits()
+    {
+        $visits = (clone $this->base())
+            ->select('session_hash')
+            ->selectRaw('MIN(created_at) as started_at, MAX(created_at) as ended_at, COUNT(*) as pages_count, SUM(duration_seconds) as total_duration')
+            ->groupBy('session_hash')
+            ->orderByDesc('ended_at')
+            ->paginate(15);
+
+        $views = PageView::whereIn('session_hash', $visits->pluck('session_hash'))
+            ->where('created_at', '>=', $this->start())
+            ->orderBy('created_at')->orderBy('id')
+            ->get()
+            ->groupBy('session_hash');
+
+        $visits->getCollection()->transform(function ($visit) use ($views) {
+            $pages = $views->get($visit->session_hash, collect());
+            $first = $pages->first();
+
+            return (object) [
+                'key' => $visit->session_hash,
+                'started_at' => Carbon::parse($visit->started_at),
+                'ended_at' => Carbon::parse($visit->ended_at),
+                // Une page rechargée plusieurs fois de suite n'apparaît qu'une fois (« Accueil ×4 »).
+                'pages' => $pages->reduce(function (array $steps, $view) {
+                    $last = array_key_last($steps);
+                    if ($last !== null && $steps[$last]['path'] === $view->path) {
+                        $steps[$last]['times']++;
+                        $steps[$last]['duration'] += (int) $view->duration_seconds;
+                    } else {
+                        $steps[] = [
+                            'label' => self::pageLabel($view->path, $view->title),
+                            'path' => $view->path,
+                            'duration' => (int) $view->duration_seconds,
+                            'times' => 1,
+                        ];
+                    }
+
+                    return $steps;
+                }, []),
+                'pages_count' => (int) $visit->pages_count,
+                'duration' => (int) $visit->total_duration,
+                'country' => $first?->country_code,
+                'device' => $first?->device,
+                'browser' => $first?->browser,
+                'os' => $first?->os,
+                'referrer' => $first?->referrer_host,
+            ];
+        });
+
+        return $visits;
+    }
+
     public static function countryName(?string $code): string
     {
         if (! $code) {
@@ -164,7 +247,7 @@ class Analytics extends Component
     public function render()
     {
         return view('livewire.admin.analytics', [
-            'recent' => (clone $this->base())->latest('created_at')->latest('id')->paginate(15),
+            'recent' => $this->recentVisits(),
             'periods' => self::PERIODS,
         ]);
     }
