@@ -55,7 +55,7 @@
                                 <flux:button size="sm" variant="ghost" icon="pencil-square" :href="route('admin.posts.edit', $post)" wire:navigate aria-label="Modifier" />
                             @endcan
                             @can('delete', $post)
-                                <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete({{ $post->id }})" wire:confirm="Placer cet article dans la corbeille ?" aria-label="Supprimer" />
+                                <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Placer cet article dans la corbeille ?" data-confirm-text="Il ne sera plus visible sur le site." data-confirm-button="Mettre à la corbeille" x-on:click="$confirm($el, () => $wire.delete({{ $post->id }}))" aria-label="Supprimer" />
                             @endcan
                         </flux:table.cell>
                     </flux:table.row>

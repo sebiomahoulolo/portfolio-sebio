@@ -101,7 +101,7 @@
                         @elseif ($this->project?->coverUrl())
                             <div class="relative">
                                 <img src="{{ $this->project->coverUrl() }}" alt="" class="h-28 w-44 rounded-lg object-cover">
-                                <flux:button size="xs" variant="danger" icon="x-mark" class="absolute end-1 top-1" wire:click="removeCover" wire:confirm="Supprimer l'image de couverture ?" aria-label="Supprimer" />
+                                <flux:button size="xs" variant="danger" icon="x-mark" class="absolute end-1 top-1" data-confirm="Supprimer l'image de couverture ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.removeCover())" aria-label="Supprimer" />
                             </div>
                         @endif
                         <div class="flex-1">
@@ -129,7 +129,7 @@
                                             <flux:button size="xs" variant="ghost" icon="arrow-up" wire:click="moveImage({{ $image->id }}, 'up')" :disabled="$loop->first" aria-label="Monter" />
                                             <flux:button size="xs" variant="ghost" icon="arrow-down" wire:click="moveImage({{ $image->id }}, 'down')" :disabled="$loop->last" aria-label="Descendre" />
                                             <flux:spacer />
-                                            <flux:button size="xs" variant="ghost" icon="trash" wire:click="removeImage({{ $image->id }})" wire:confirm="Supprimer cette image ?" aria-label="Supprimer" />
+                                            <flux:button size="xs" variant="ghost" icon="trash" data-confirm="Supprimer cette image ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.removeImage({{ $image->id }}))" aria-label="Supprimer" />
                                         </div>
                                     </div>
                                 </div>

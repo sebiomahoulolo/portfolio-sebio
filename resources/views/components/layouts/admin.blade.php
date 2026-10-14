@@ -117,6 +117,7 @@
     </flux:main>
 
     <flux:toast />
+    <x-admin.dialogs />
     @fluxScripts
 </body>
 </html>

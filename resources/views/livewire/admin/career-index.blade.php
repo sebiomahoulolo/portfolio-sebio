@@ -20,7 +20,7 @@
                 <div class="flex shrink-0 gap-1">
                     <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit('experience', {{ $item->id }})" aria-label="Modifier" />
                     @can('delete', $item)
-                        <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete('experience', {{ $item->id }})" wire:confirm="Supprimer cette expérience ?" aria-label="Supprimer" />
+                        <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer cette expérience ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete('experience', {{ $item->id }}))" aria-label="Supprimer" />
                     @endcan
                 </div>
             </div>
@@ -45,7 +45,7 @@
                     <div class="flex shrink-0 gap-1">
                         <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit('education', {{ $item->id }})" aria-label="Modifier" />
                         @can('delete', $item)
-                            <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete('education', {{ $item->id }})" wire:confirm="Supprimer cette formation ?" aria-label="Supprimer" />
+                            <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer cette formation ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete('education', {{ $item->id }}))" aria-label="Supprimer" />
                         @endcan
                     </div>
                 </div>
@@ -69,7 +69,7 @@
                     <div class="flex shrink-0 gap-1">
                         <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit('certification', {{ $item->id }})" aria-label="Modifier" />
                         @can('delete', $item)
-                            <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete('certification', {{ $item->id }})" wire:confirm="Supprimer cette certification ?" aria-label="Supprimer" />
+                            <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer cette certification ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete('certification', {{ $item->id }}))" aria-label="Supprimer" />
                         @endcan
                     </div>
                 </div>

@@ -24,6 +24,7 @@
             </div>
         </div>
     </div>
+    <x-admin.dialogs />
     @fluxScripts
 </body>
 </html>

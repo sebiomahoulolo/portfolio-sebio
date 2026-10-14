@@ -22,7 +22,7 @@
             <flux:text class="me-2 font-medium">{{ count($selected) }} sélectionné(s)</flux:text>
             <flux:button size="sm" wire:click="bulk('read')">Marquer comme lus</flux:button>
             <flux:button size="sm" wire:click="bulk('archive')">Archiver</flux:button>
-            <flux:button size="sm" variant="danger" wire:click="bulk('delete')" wire:confirm="Supprimer définitivement les messages sélectionnés ?">Supprimer</flux:button>
+            <flux:button size="sm" variant="danger" data-confirm="Supprimer définitivement les messages sélectionnés ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.bulk('delete'))">Supprimer</flux:button>
             <flux:button size="sm" variant="ghost" wire:click="$set('selected', [])">Annuler</flux:button>
         </div>
     @endif

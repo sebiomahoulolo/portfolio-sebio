@@ -49,7 +49,7 @@
             @else
                 <flux:button wire:click="setStatus('archived')" icon="archive-box">Archiver</flux:button>
             @endif
-            <flux:button variant="danger" icon="trash" wire:click="delete" wire:confirm="Supprimer définitivement ce message ?">Supprimer</flux:button>
+            <flux:button variant="danger" icon="trash" data-confirm="Supprimer définitivement ce message ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete())">Supprimer</flux:button>
         </div>
     </flux:card>
 </div>

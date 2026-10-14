@@ -50,7 +50,7 @@
                                 <flux:button size="sm" variant="ghost" icon="pencil-square" :href="route('admin.services.edit', $service)" wire:navigate aria-label="Modifier" />
                             @endcan
                             @can('delete', $service)
-                                <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete({{ $service->id }})" wire:confirm="Supprimer ce service ?" aria-label="Supprimer" />
+                                <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer ce service ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete({{ $service->id }}))" aria-label="Supprimer" />
                             @endcan
                         </flux:table.cell>
                     </flux:table.row>

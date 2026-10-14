@@ -49,8 +49,8 @@
                                     <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit({{ $tech->id }})" aria-label="Modifier" />
                                 @endcan
                                 @can('delete', $tech)
-                                    <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete({{ $tech->id }})"
-                                        wire:confirm="Supprimer {{ $tech->name }} ? {{ $tech->projects_count ? 'Elle sera retirée de '.$tech->projects_count.' projet(s).' : '' }}" aria-label="Supprimer" />
+                                    <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer {{ $tech->name }} ? {{ $tech->projects_count ? 'Elle sera retirée de '.$tech->projects_count.' projet(s).' : '' }}" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer"
+                                        x-on:click="$confirm($el, () => $wire.delete({{ $tech->id }}))" aria-label="Supprimer" />
                                 @endcan
                             </flux:table.cell>
                         </flux:table.row>

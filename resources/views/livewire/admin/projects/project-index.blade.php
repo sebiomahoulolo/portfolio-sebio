@@ -48,7 +48,7 @@
                 <flux:button size="sm" wire:click="bulk('publish')">Publier</flux:button>
                 <flux:button size="sm" wire:click="bulk('draft')">Repasser en brouillon</flux:button>
                 <flux:button size="sm" wire:click="bulk('archive')">Archiver</flux:button>
-                <flux:button size="sm" variant="danger" wire:click="bulk('delete')" wire:confirm="Placer les projets sélectionnés dans la corbeille ?">Mettre à la corbeille</flux:button>
+                <flux:button size="sm" variant="danger" data-confirm="Placer les projets sélectionnés dans la corbeille ?" data-confirm-text="Vous pourrez le restaurer depuis la corbeille." data-confirm-button="Mettre à la corbeille" x-on:click="$confirm($el, () => $wire.bulk('delete'))">Mettre à la corbeille</flux:button>
             @endif
             <flux:button size="sm" variant="ghost" wire:click="$set('selected', [])">Annuler</flux:button>
         </div>

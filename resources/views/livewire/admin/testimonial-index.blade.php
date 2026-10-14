@@ -63,7 +63,7 @@
                                 <flux:button size="sm" variant="ghost" icon="pencil-square" wire:click="edit({{ $testimonial->id }})" aria-label="Modifier" />
                             @endcan
                             @can('delete', $testimonial)
-                                <flux:button size="sm" variant="ghost" icon="trash" wire:click="delete({{ $testimonial->id }})" wire:confirm="Supprimer cette recommandation ?" aria-label="Supprimer" />
+                                <flux:button size="sm" variant="ghost" icon="trash" data-confirm="Supprimer cette recommandation ?" data-confirm-text="Cette action est définitive." data-confirm-button="Supprimer" x-on:click="$confirm($el, () => $wire.delete({{ $testimonial->id }}))" aria-label="Supprimer" />
                             @endcan
                         </div>
                     </div>
