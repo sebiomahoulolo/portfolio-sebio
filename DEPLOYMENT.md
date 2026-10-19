@@ -105,8 +105,8 @@ Vérification : `php artisan portfolio:backup` crée une archive tout de suite ;
 1. hPanel → **Sites web → Ajouter un domaine** (ou « Changer de domaine » sur le site existant) : `mahoulolo-sebio.com`.
 2. Chez le registraire du domaine : faites pointer les serveurs DNS vers ceux de Hostinger (`ns1.dns-parking.com`, `ns2.dns-parking.com`), ou créez les enregistrements A indiqués dans hPanel.
 3. hPanel → **SSL** : activez le certificat gratuit.
-4. Vérifiez `APP_URL=https://mahoulolo-sebio.com` dans `.env`, puis lancez `php artisan optimize`.
-5. Soumettez `https://mahoulolo-sebio.com/sitemap.xml` dans Google Search Console.
+4. Vérifiez `APP_URL=https://www.mahoulolo-sebio.com` (avec www : l’adresse sans www y est redirigée) dans `.env`, puis lancez `php artisan optimize`.
+5. Soumettez `https://www.mahoulolo-sebio.com/sitemap.xml` dans Google Search Console.
 
 ## 6. Vérifications après déploiement
 
