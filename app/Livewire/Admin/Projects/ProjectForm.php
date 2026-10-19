@@ -58,7 +58,7 @@ class ProjectForm extends Component
             $this->slugTouched = true;
 
             $this->form = $project->only([
-                'slug', 'category', 'client', 'period', 'demo_url', 'repository_url', 'sort_order', 'is_featured', 'is_indexable',
+                'slug', 'slug_en', 'category', 'client', 'period', 'demo_url', 'repository_url', 'sort_order', 'is_featured', 'is_indexable',
             ]);
             foreach (self::TRANSLATED as $field) {
                 $this->form[$field] = array_merge($locales, $project->{$field} ?? []);
@@ -73,7 +73,7 @@ class ProjectForm extends Component
             $this->authorize('create', Project::class);
 
             $this->form = [
-                'slug' => '', 'category' => '', 'client' => '', 'period' => '',
+                'slug' => '', 'slug_en' => '', 'category' => '', 'client' => '', 'period' => '',
                 'demo_url' => '', 'repository_url' => '',
                 'sort_order' => (int) Project::max('sort_order') + 1,
                 'is_featured' => false, 'is_indexable' => true,
@@ -132,6 +132,7 @@ class ProjectForm extends Component
 
         $rules = [
             'form.slug' => ['required', 'alpha_dash:ascii', 'max:160', Rule::unique('projects', 'slug')->ignore($this->projectId)],
+            'form.slug_en' => ['nullable', 'alpha_dash:ascii', 'max:160', Rule::unique('projects', 'slug_en')->ignore($this->projectId)],
             'form.category' => ['nullable', 'string', 'max:80'],
             'form.client' => ['nullable', 'string', 'max:120'],
             'form.period' => ['nullable', 'string', 'max:60'],
@@ -170,6 +171,7 @@ class ProjectForm extends Component
         return [
             'form.title.fr' => 'titre (FR)',
             'form.slug' => 'slug',
+            'form.slug_en' => 'adresse anglaise',
             'form.demo_url' => 'lien de démonstration',
             'form.repository_url' => 'lien du dépôt',
             'cover' => 'image de couverture',
@@ -189,7 +191,7 @@ class ProjectForm extends Component
         $this->authorize($project->exists ? 'update' : 'create', $project->exists ? $project : Project::class);
 
         $data = collect($this->form)->only([
-            'slug', 'category', 'client', 'period', 'demo_url', 'repository_url', 'sort_order', 'is_featured', 'is_indexable',
+            'slug', 'slug_en', 'category', 'client', 'period', 'demo_url', 'repository_url', 'sort_order', 'is_featured', 'is_indexable',
             ...self::TRANSLATED,
         ])->map(fn ($value) => is_array($value) ? array_filter($value, fn ($v) => filled($v)) : (blank($value) ? null : $value))->all();
 

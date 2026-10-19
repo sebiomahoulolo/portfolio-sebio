@@ -1,6 +1,6 @@
 <x-layouts.site :profile="$profile"
-    :title="__('Projets').($activeTechnology ? ' '.$activeTechnology->name : '').' — '.$profile->name"
-    :description="__('Les réalisations de :name : plateformes web, SaaS et applications sur mesure.', ['name' => $profile->name])"
+    :title="__('Projets et études de cas').($activeTechnology ? ' '.$activeTechnology->name : '').' — '.$profile->name"
+    :description="__('Les réalisations de :name, développeur Full Stack Laravel au Bénin : plateformes web, SaaS et applications sur mesure, avec leurs études de cas.', ['name' => $profile->name])"
     :indexable="! $activeTechnology"
     :breadcrumbs="[__('Projets') => lroute('projects.index')]">
 
@@ -26,6 +26,7 @@
 
     <section class="section">
         <div class="container">
+            <h2 class="sr-only">{{ __('Tous les projets') }}</h2>
             @if ($filters->count() > 1)
                 <nav class="filters reveal" aria-label="{{ __('Filtrer par technologie') }}">
                     <a href="{{ lroute('projects.index') }}" @class(['is-active' => ! $activeTechnology])>{{ __('Tous') }}</a>

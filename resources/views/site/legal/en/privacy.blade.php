@@ -1,6 +1,12 @@
+@php $analytics = config('portfolio.seo.google_analytics'); @endphp
 <p>
-    This website collects as little data as possible. It uses <strong>no advertising cookies and no third-party tracking</strong> (no Google Analytics, no Facebook pixel),
-    and never sells or shares your data.
+    @if ($analytics)
+        This website collects as little data as possible. It uses <strong>no advertising cookies</strong> and no Facebook pixel;
+        Google Analytics is enabled <strong>only if you accept it</strong>. Your data is never sold or shared.
+    @else
+        This website collects as little data as possible. It uses <strong>no advertising cookies and no third-party tracking</strong> (no Google Analytics, no Facebook pixel),
+        and never sells or shares your data.
+    @endif
 </p>
 
 <h2>Data controller</h2>
@@ -35,6 +41,17 @@
     <li><strong>Retention:</strong> {{ $retention['page_views_months'] }} months, then deletion (only the total number of visitors is kept).</li>
 </ul>
 
+@if ($analytics)
+    <h3>Google Analytics (only with your consent)</h3>
+    <ul>
+        <li><strong>When:</strong> only if you click “Accept” in the cookie banner. Without consent, nothing is loaded.</li>
+        <li><strong>Data:</strong> pages viewed, duration, traffic source, device, approximate country and city. Google Analytics 4 does not store your IP address.</li>
+        <li><strong>Cookies:</strong> <code>_ga</code> and <code>_ga_*</code>, kept for up to 2 years, to recognise a returning visitor.</li>
+        <li><strong>Recipient:</strong> Google Ireland Ltd / Google LLC, with possible transfers outside your country, covered by Google’s contractual clauses.</li>
+        <li><strong>Legal basis:</strong> your consent. You can withdraw it at any time with the “Cookies” link at the bottom of every page: the <code>_ga</code> cookies are then deleted.</li>
+    </ul>
+
+@endif
 <h3>Technical security measures</h3>
 <p>
     To prevent abuse (spam, intrusion attempts), an encrypted fingerprint of the IP address and the browser type are stored with messages and reviews.
@@ -47,13 +64,22 @@
     <li><strong>Session cookie</strong>: secures forms and audience measurement during your visit ({{ config('session.lifetime') }} minutes of inactivity).</li>
     <li><strong>XSRF-TOKEN cookie</strong>: protects forms against forged submissions.</li>
     <li><strong>Theme preference</strong> (light or dark): stored in your browser only, never sent to the server.</li>
+    @if ($analytics)
+        <li><strong>Your cookie choice</strong> (accepted or declined): stored in your browser so you are not asked again on every page.</li>
+    @endif
 </ul>
+@if ($analytics)
+    <p>Google Analytics cookies (<code>_ga</code>, <code>_ga_*</code>) are only set with your consent, as described above.</p>
+@endif
 
 <h2>External services</h2>
 <p>To display the website, your browser loads a few resources from other servers, which then receive your IP address:</p>
 <ul>
     <li><strong>Google Fonts</strong> (typefaces) and <strong>cdnjs / Cloudflare</strong> (icons);</li>
-    <li><strong>YouTube</strong>, in privacy-enhanced mode, only when an article contains a video.</li>
+    <li><strong>YouTube</strong>, in privacy-enhanced mode, only when an article contains a video;</li>
+    @if ($analytics)
+        <li><strong>Google Analytics</strong>, only if you have accepted it.</li>
+    @endif
 </ul>
 <p>Notification emails are sent through the hosting provider’s mail server, Hostinger.</p>
 

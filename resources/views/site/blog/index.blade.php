@@ -1,6 +1,6 @@
 <x-layouts.site :profile="$profile"
-    :title="__('Blog').($activeTag ? ' · '.$activeTag : '').' — '.$profile->name"
-    :description="__('Articles techniques sur Laravel, la sécurité des applications et les plateformes SaaS.')"
+    :title="__('Blog Laravel, SaaS et sécurité').($activeTag ? ' · '.$activeTag : '').' — '.$profile->name"
+    :description="__('Articles techniques sur Laravel, la sécurité des applications et les plateformes SaaS, par :name : retours d’expérience, code et bonnes pratiques.', ['name' => $profile->name])"
     :indexable="! $activeTag && $posts->currentPage() === 1"
     :breadcrumbs="[__('Blog') => lroute('blog.index')]">
 
@@ -26,6 +26,7 @@
 
     <section class="section">
         <div class="container">
+            <h2 class="sr-only">{{ __('Tous les articles') }}</h2>
             @if ($tags->count() > 1)
                 <nav class="filters reveal" aria-label="{{ __('Filtrer par thème') }}">
                     <a href="{{ lroute('blog.index') }}" @class(['is-active' => ! $activeTag])>{{ __('Tous') }}</a>

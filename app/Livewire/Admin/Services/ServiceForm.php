@@ -32,7 +32,7 @@ class ServiceForm extends Component
         if ($service?->exists) {
             $this->authorize('update', $service);
             $this->serviceId = $service->id;
-            $this->form = $service->only(['slug', 'icon', 'sort_order', 'is_published']);
+            $this->form = $service->only(['slug', 'slug_en', 'icon', 'sort_order', 'is_published']);
             foreach (self::TRANSLATED as $field) {
                 $this->form[$field] = array_merge($locales, $service->{$field} ?? []);
             }
@@ -41,7 +41,7 @@ class ServiceForm extends Component
             }
         } else {
             $this->authorize('create', Service::class);
-            $this->form = ['slug' => '', 'icon' => 'fas fa-code', 'sort_order' => (int) Service::max('sort_order') + 1, 'is_published' => true];
+            $this->form = ['slug' => '', 'slug_en' => '', 'icon' => 'fas fa-code', 'sort_order' => (int) Service::max('sort_order') + 1, 'is_published' => true];
             foreach (self::TRANSLATED as $field) {
                 $this->form[$field] = $locales;
             }
@@ -63,11 +63,12 @@ class ServiceForm extends Component
             'form.price_label.*' => ['nullable', 'string', 'max:80'],
             'form.seo_description.*' => ['nullable', 'string', 'max:160'],
             'form.slug' => ['required', 'alpha_dash:ascii', 'max:160', Rule::unique('services', 'slug')->ignore($this->serviceId)],
+            'form.slug_en' => ['nullable', 'alpha_dash:ascii', 'max:160', Rule::unique('services', 'slug_en')->ignore($this->serviceId)],
             'form.icon' => ['nullable', 'string', 'max:60', 'regex:/^(fa[bsr]?|fa-(solid|brands|regular))( fa-[a-z0-9-]+)+$/'],
             'form.sort_order' => ['required', 'integer', 'min:0', 'max:9999'],
             'form.is_published' => ['boolean'],
             'features.*' => ['nullable', 'string', 'max:2000'],
-        ], [], ['form.title.fr' => 'titre (FR)', 'form.slug' => 'slug', 'form.icon' => 'icône']);
+        ], [], ['form.title.fr' => 'titre (FR)', 'form.slug' => 'slug', 'form.slug_en' => 'adresse anglaise', 'form.icon' => 'icône']);
 
         $service = $this->serviceId ? Service::findOrFail($this->serviceId) : new Service;
         $this->authorize($service->exists ? 'update' : 'create', $service->exists ? $service : Service::class);

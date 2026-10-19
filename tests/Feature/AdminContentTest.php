@@ -44,7 +44,8 @@ class AdminContentTest extends TestCase
         $this->assertSame('Performance audit', $service->translate('title', 'en'));
         $this->assertSame(['Analyse Lighthouse', 'Optimisation des requêtes'], $service->featuresFor('fr'));
 
-        $this->get('/en/services/audit-de-performance')->assertOk()->assertSee('Performance audit');
+        $this->get('/en/services/performance-audit')->assertOk()->assertSee('Performance audit');
+        $this->get('/en/services/audit-de-performance')->assertRedirect(url('/en/services/performance-audit'));
     }
 
     public function test_service_icon_must_be_a_font_awesome_class(): void

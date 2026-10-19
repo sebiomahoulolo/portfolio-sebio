@@ -90,7 +90,7 @@ class LocalizationAndServicesTest extends TestCase
     {
         $this->get('/sitemap.xml')
             ->assertOk()
-            ->assertSee(url('/en/services/formation'), false)
+            ->assertSee(url('/en/services/training'), false)
             ->assertSee(url('/services/formation'), false)
             ->assertSee('hreflang="en"', false);
     }

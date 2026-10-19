@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedSlug;
 use App\Models\Concerns\HasPublication;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Project extends Model
 {
-    use HasFactory, HasPublication, HasTranslations, SoftDeletes;
+    use HasFactory, HasLocalizedSlug, HasPublication, HasTranslations, SoftDeletes;
 
     protected array $translatable = [
         'title', 'excerpt', 'description', 'context', 'challenge', 'solution', 'results',
@@ -30,7 +31,7 @@ class Project extends Model
     protected $attributes = ['status' => 'draft'];
 
     protected $fillable = [
-        'title', 'slug', 'excerpt', 'description', 'context', 'challenge', 'solution', 'results', 'metrics',
+        'title', 'slug', 'slug_en', 'excerpt', 'description', 'context', 'challenge', 'solution', 'results', 'metrics',
         'role', 'category', 'client', 'period',
         'status', 'is_featured', 'sort_order', 'cover_image', 'cover_alt',
         'demo_url', 'repository_url', 'seo_title', 'seo_description', 'is_indexable', 'published_at',

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedSlug;
 use App\Models\Concerns\HasPublication;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -11,14 +12,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
-    use HasFactory, HasPublication, HasTranslations, SoftDeletes;
+    use HasFactory, HasLocalizedSlug, HasPublication, HasTranslations, SoftDeletes;
 
     protected array $translatable = ['title', 'excerpt', 'body', 'seo_title', 'seo_description'];
 
     protected $attributes = ['status' => 'draft'];
 
     protected $fillable = [
-        'title', 'slug', 'excerpt', 'body', 'tags', 'cover_image', 'status',
+        'title', 'slug', 'slug_en', 'excerpt', 'body', 'tags', 'cover_image', 'status',
         'seo_title', 'seo_description', 'is_indexable', 'published_at',
     ];
 

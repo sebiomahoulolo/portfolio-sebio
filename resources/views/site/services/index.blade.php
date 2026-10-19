@@ -1,12 +1,11 @@
 <x-layouts.site :profile="$profile"
-    :title="__('Services').' — '.$profile->name"
+    :title="__('Services de développement web et SaaS').' — '.$profile->name"
     :description="__('Développement web, logiciels sur mesure et SaaS, applications, bases de données, conseil en sécurité et formation : les services de :name.', ['name' => $profile->name])"
     :breadcrumbs="[__('Services') => lroute('services.index')]">
 
     <x-slot:head>
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'ProfessionalService',
                 'name' => $profile->name,
                 'url' => lroute('services.index'),
@@ -16,7 +15,7 @@
                     'name' => __('Services'),
                     'itemListElement' => $services->map(fn ($s) => ['@type' => 'Offer', 'itemOffered' => ['@type' => 'Service', 'name' => $s->translate('title'), 'description' => $s->translate('summary')]])->values()->all(),
                 ],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     </x-slot:head>
 
@@ -50,6 +49,7 @@
 
     <section class="section">
         <div class="container">
+            <h2 class="sr-only">{{ __('Mes services') }}</h2>
             @if ($services->isEmpty())
                 <div class="tile empty">{{ __('Les services seront bientôt présentés ici.') }}</div>
             @else

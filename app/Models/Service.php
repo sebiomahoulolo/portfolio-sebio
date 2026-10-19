@@ -2,20 +2,21 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\HasLocalizedSlug;
 use App\Models\Concerns\HasTranslations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
 class Service extends Model
 {
-    use HasTranslations;
+    use HasLocalizedSlug, HasTranslations;
 
     protected array $translatable = ['title', 'summary', 'description', 'features', 'price_label', 'seo_description'];
 
     protected $attributes = ['is_published' => true];
 
     protected $fillable = [
-        'title', 'slug', 'summary', 'description', 'features', 'price_label', 'icon',
+        'title', 'slug', 'slug_en', 'summary', 'description', 'features', 'price_label', 'icon',
         'is_published', 'sort_order', 'seo_description',
     ];
 

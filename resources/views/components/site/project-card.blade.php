@@ -2,13 +2,13 @@
 
 @php
     $title = $project->translate('title');
-    $url = lroute('projects.show', ['slug' => $project->slug]);
+    $url = lroute('projects.show', ['slug' => $project->slugFor()]);
 @endphp
 
 <article @class(['tile project-tile reveal', 'span-2' => $wide]) style="--delay: {{ $delay }}s">
     <div class="project-media">
         @if ($project->coverUrl())
-            <img src="{{ $project->coverUrl() }}" alt="{{ $project->translate('cover_alt') ?? '' }}" loading="lazy" width="800" height="500">
+            <img src="{{ $project->coverUrl() }}" alt="{{ $project->translate('cover_alt') ?: $title }}" loading="lazy" width="800" height="500">
         @else
             <div class="project-placeholder" aria-hidden="true">
                 <div class="browser">

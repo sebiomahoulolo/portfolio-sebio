@@ -37,6 +37,9 @@ return [
     'seo' => [
         'google_verification' => env('GOOGLE_SITE_VERIFICATION'),
         'bing_verification' => env('BING_SITE_VERIFICATION'),
+        // Identifiant de mesure Google Analytics 4 (G-XXXXXXX). Chargé uniquement
+        // après l'accord du visiteur via le bandeau cookies.
+        'google_analytics' => env('GOOGLE_ANALYTICS_ID'),
     ],
 
     /*

@@ -18,9 +18,9 @@ class SitemapController extends Controller
      */
     public function __invoke(): Response
     {
-        $posts = Post::published()->where('is_indexable', true)->latest('published_at')->get(['slug', 'updated_at']);
-        $services = Service::published()->orderBy('sort_order')->get(['slug', 'updated_at']);
-        $projects = Project::published()->where('is_indexable', true)->orderBy('sort_order')->get(['slug', 'updated_at']);
+        $posts = Post::published()->where('is_indexable', true)->latest('published_at')->get(['slug', 'slug_en', 'title', 'updated_at']);
+        $services = Service::published()->orderBy('sort_order')->get(['slug', 'slug_en', 'title', 'updated_at']);
+        $projects = Project::published()->where('is_indexable', true)->orderBy('sort_order')->get(['slug', 'slug_en', 'title', 'updated_at']);
 
         $profileUpdated = ProfileSetting::query()->max('updated_at');
         $homeUpdated = collect([$profileUpdated, $projects->max('updated_at'), $services->max('updated_at')])
@@ -35,9 +35,9 @@ class SitemapController extends Controller
             ['legal.privacy', [], 0.2, LegalController::UPDATED_AT],
         ]);
 
-        $posts->each(fn ($post) => $pages->push(['blog.show', ['slug' => $post->slug], 0.6, $post->updated_at]));
-        $services->each(fn ($service) => $pages->push(['services.show', ['slug' => $service->slug], 0.7, $service->updated_at]));
-        $projects->each(fn ($project) => $pages->push(['projects.show', ['slug' => $project->slug], 0.7, $project->updated_at]));
+        $posts->each(fn ($post) => $pages->push(['blog.show', $post->localizedRouteParameters(), 0.6, $post->updated_at]));
+        $services->each(fn ($service) => $pages->push(['services.show', $service->localizedRouteParameters(), 0.7, $service->updated_at]));
+        $projects->each(fn ($project) => $pages->push(['projects.show', $project->localizedRouteParameters(), 0.7, $project->updated_at]));
 
         return response()
             ->view('site.sitemap', [

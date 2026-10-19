@@ -1,8 +1,8 @@
 @props(['post', 'delay' => 0, 'wide' => false, 'dark' => false])
 
-<a href="{{ lroute('blog.show', ['slug' => $post->slug]) }}" @class(['tile post-tile reveal', 'span-2' => $wide, 'tile-dark' => $dark]) style="--delay: {{ $delay }}s">
+<a href="{{ lroute('blog.show', ['slug' => $post->slugFor()]) }}" @class(['tile post-tile reveal', 'span-2' => $wide, 'tile-dark' => $dark]) style="--delay: {{ $delay }}s">
     @if ($post->coverUrl())
-        <div class="post-cover"><img src="{{ $post->coverUrl() }}" alt="" loading="lazy"></div>
+        <div class="post-cover"><img src="{{ $post->coverUrl() }}" alt="{{ $post->translate('title') }}" loading="lazy" width="800" height="450"></div>
     @endif
     <div class="post-meta">
         <span><i class="far fa-calendar" aria-hidden="true"></i> {{ $post->published_at->translatedFormat('d M Y') }}</span>

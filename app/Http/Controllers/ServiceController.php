@@ -6,6 +6,7 @@ use App\Models\ProfileSetting;
 use App\Models\Project;
 use App\Models\Service;
 use App\Models\Testimonial;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class ServiceController extends Controller
@@ -19,9 +20,12 @@ class ServiceController extends Controller
         ]);
     }
 
-    public function show(string $slug): View
+    public function show(string $slug): View|RedirectResponse
     {
-        $service = Service::published()->where('slug', $slug)->firstOrFail();
+        $service = $this->findLocalized(Service::published(), $slug, 'services.show');
+        if ($service instanceof RedirectResponse) {
+            return $service;
+        }
 
         return view('site.services.show', [
             'profile' => ProfileSetting::current(),

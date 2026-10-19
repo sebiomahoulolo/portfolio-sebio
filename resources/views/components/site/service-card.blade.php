@@ -1,6 +1,6 @@
 @props(['service', 'delay' => 0, 'dark' => false, 'detailed' => false, 'wide' => false])
 
-<a href="{{ lroute('services.show', ['slug' => $service->slug]) }}"
+<a href="{{ lroute('services.show', ['slug' => $service->slugFor()]) }}"
     @class(['tile service-tile reveal', 'tile-dark' => $dark, 'span-2' => $wide]) style="--delay: {{ $delay }}s">
     <span class="service-icon"><i class="{{ $service->icon ?: 'fas fa-code' }}" aria-hidden="true"></i></span>
     <h3>{{ $service->translate('title') }}</h3>

@@ -15,12 +15,18 @@
     $locales = config('portfolio.locales');
     $initials = Str::of($profile->name)->explode(' ')->map(fn ($p) => Str::substr($p, 0, 1))->take(2)->implode('');
     $siteTitle = $title ?? ($profile->translate('seo_title') ?: $profile->name.' — '.$profile->translate('headline'));
-    $metaDescription = Str::limit(strip_tags($description ?? ($profile->translate('seo_description') ?: $profile->translate('intro'))), 160);
+    // Au-delà de 65 caractères, Google coupe le titre : on retire alors le nom en suffixe.
+    if (mb_strlen($siteTitle) > 65 && Str::endsWith($siteTitle, ' — '.$profile->name)) {
+        $siteTitle = Str::beforeLast($siteTitle, ' — '.$profile->name);
+    }
+    $metaDescription = meta_description($description ?? ($profile->translate('seo_description') ?: $profile->translate('intro')));
     $shareImage = $image ?? ($profile->og_image_path ? $profile->mediaUrl($profile->og_image_path) : $profile->photoUrl());
     $canonicalUrl = alternate_url($locale);
     $home = request()->routeIs('home', 'en.home');
     $anchor = fn (string $id) => $home ? '#'.$id : lroute('home').'#'.$id;
     $is = fn (string $name) => request()->routeIs($name, 'en.'.$name);
+    // Pas de Google Analytics pour l'administrateur connecté : ses visites fausseraient les chiffres.
+    $analyticsId = auth()->check() ? null : config('portfolio.seo.google_analytics');
 @endphp
 
 <!DOCTYPE html>
@@ -80,26 +86,24 @@
 
     @if ($home)
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'WebSite',
                 'name' => $profile->name,
                 'url' => lroute('home'),
                 'inLanguage' => $locale,
                 'author' => ['@type' => 'Person', 'name' => $profile->name],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     @elseif ($breadcrumbs)
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'BreadcrumbList',
                 'itemListElement' => collect([__('Accueil') => lroute('home')] + $breadcrumbs)
                     ->map(fn ($url, $label) => ['name' => $label, 'item' => $url])
                     ->values()
                     ->map(fn ($item, $i) => ['@type' => 'ListItem', 'position' => $i + 1] + $item)
                     ->all(),
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     @endif
 
@@ -210,6 +214,9 @@
                     <a href="{{ $anchor('contact') }}">{{ __('Contact') }}</a>
                     <a href="{{ lroute('legal.notice') }}">{{ __('Mentions légales') }}</a>
                     <a href="{{ lroute('legal.privacy') }}">{{ __('Confidentialité') }}</a>
+                    @if ($analyticsId)
+                        <button type="button" class="footer-link-button" data-consent-open>{{ __('Cookies') }}</button>
+                    @endif
                 </nav>
                 <x-site.socials :profile="$profile" />
             </div>
@@ -232,6 +239,22 @@
         <a href="{{ $anchor('contact') }}" class="protect-toast-link">{{ __('Me contacter') }}</a>
         <button type="button" class="protect-toast-close" data-protect-close aria-label="{{ __('Fermer') }}"><i class="fas fa-xmark" aria-hidden="true"></i></button>
     </div>
+
+    @if ($analyticsId)
+        {{-- Bandeau cookies : Google Analytics n'est chargé qu'après « Accepter » (voir site.js). --}}
+        <div class="consent-banner" role="dialog" aria-live="polite" aria-labelledby="consent-title" data-ga="{{ $analyticsId }}" hidden>
+            <span class="consent-icon" aria-hidden="true"><i class="fas fa-cookie-bite"></i></span>
+            <div class="consent-body">
+                <strong id="consent-title">{{ __('Mesure d’audience') }}</strong>
+                <span>{{ __('J’aimerais utiliser Google Analytics pour savoir comment le site est consulté. Il dépose des cookies seulement si vous acceptez.') }}
+                    <a href="{{ lroute('legal.privacy') }}">{{ __('En savoir plus') }}</a></span>
+            </div>
+            <div class="consent-actions">
+                <button type="button" class="btn btn-sm consent-refuse" data-consent-refuse>{{ __('Refuser') }}</button>
+                <button type="button" class="btn btn-accent btn-sm" data-consent-accept>{{ __('Accepter') }}</button>
+            </div>
+        </div>
+    @endif
 
     <script src="{{ asset('js/site.js') }}?v={{ filemtime(public_path('js/site.js')) }}" defer></script>
 </body>

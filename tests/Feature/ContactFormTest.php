@@ -7,6 +7,7 @@ use App\Models\ContactMessage;
 use App\Models\User;
 use App\Notifications\NewContactMessage;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Notification;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -27,6 +28,7 @@ class ContactFormTest extends TestCase
             'budget' => '500k-1500k',
             'message' => 'Nous souhaitons refondre notre site vitrine et ajouter un espace client.',
             'website' => '',
+            'started_at' => Crypt::encryptString((string) now()->subSeconds(30)->timestamp),
         ], $overrides);
     }
 
@@ -76,6 +78,31 @@ class ContactFormTest extends TestCase
 
         $this->post(route('contact.store'), $this->payload(['website' => 'http://spam.example']))
             ->assertSessionHasErrorsIn('contact', ['website']);
+
+        $this->assertDatabaseCount('contact_messages', 0);
+        Notification::assertNothingSent();
+    }
+
+    public function test_spam_is_silently_dropped(): void
+    {
+        Notification::fake();
+
+        $spam = [
+            'sans horodatage' => ['started_at' => null],
+            'horodatage falsifié' => ['started_at' => 'abc'],
+            'rempli trop vite' => ['started_at' => Crypt::encryptString((string) now()->timestamp)],
+            'texte aléatoire' => [
+                'name' => 'NARETGR278455NEWETREWT',
+                'subject' => 'TORTYT278455TIGFHFGER',
+                'message' => 'METYUTYJ278455MARETRYTR',
+            ],
+        ];
+
+        foreach ($spam as $case => $overrides) {
+            $this->from('/')->post(route('contact.store'), $this->payload($overrides))
+                ->assertRedirect(url('/').'#contact')
+                ->assertSessionHas('contact_sent');
+        }
 
         $this->assertDatabaseCount('contact_messages', 0);
         Notification::assertNothingSent();

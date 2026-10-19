@@ -15,8 +15,7 @@
 <x-layouts.site :profile="$profile">
     <x-slot:head>
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'Person',
                 'name' => $profile->name,
                 'jobTitle' => $profile->translate('headline'),
@@ -28,7 +27,7 @@
                 'sameAs' => array_values($profile->social_links ?? []),
                 'knowsAbout' => array_merge($profile->expertiseFor(), $stack->pluck('name')->all()),
                 'makesOffer' => $services->map(fn ($s) => ['@type' => 'Offer', 'itemOffered' => ['@type' => 'Service', 'name' => $s->translate('title')]])->all(),
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     </x-slot:head>
 
@@ -388,7 +387,7 @@
 
                 <div class="bento">
                     <div class="tile span-2 row-2 reveal">
-                        <span class="tile-label"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ __('Expérience professionnelle') }}</span>
+                        <h3 class="tile-label"><i class="fas fa-briefcase" aria-hidden="true"></i> {{ __('Expérience professionnelle') }}</h3>
                         <ol class="timeline">
                             @foreach ($experiences as $experience)
                                 <li>
@@ -406,7 +405,7 @@
 
                     @if ($educations->isNotEmpty())
                         <div class="tile tile-dark span-2 reveal" style="--delay: .08s">
-                            <span class="tile-label"><i class="fas fa-graduation-cap" aria-hidden="true"></i> {{ __('Formation') }}</span>
+                            <h3 class="tile-label"><i class="fas fa-graduation-cap" aria-hidden="true"></i> {{ __('Formation') }}</h3>
                             <ol class="timeline">
                                 @foreach ($educations as $education)
                                     <li>

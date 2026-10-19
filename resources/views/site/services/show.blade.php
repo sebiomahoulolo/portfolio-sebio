@@ -3,22 +3,21 @@
 @endphp
 
 <x-layouts.site :profile="$profile"
-    :title="$title.' — '.$profile->name"
-    :description="$service->translate('seo_description') ?: $service->translate('summary')"
-    :breadcrumbs="[__('Services') => lroute('services.index'), $title => lroute('services.show', ['slug' => $service->slug])]"
+    :title="__(':service au Bénin', ['service' => $title]).' — '.$profile->name"
+    :description="meta_description($service->translate('seo_description') ?: $service->translate('summary'), __('Un service de :name, développeur Full Stack Laravel à Cotonou (Bénin). Premier échange gratuit.', ['name' => $profile->name]))"
+    :breadcrumbs="[__('Services') => lroute('services.index'), $title => lroute('services.show', ['slug' => $service->slugFor()])]"
     type="article">
 
     <x-slot:head>
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'Service',
                 'name' => $title,
                 'description' => $service->translate('summary'),
-                'url' => lroute('services.show', ['slug' => $service->slug]),
+                'url' => lroute('services.show', ['slug' => $service->slugFor()]),
                 'provider' => ['@type' => 'Person', 'name' => $profile->name, 'url' => lroute('home')],
                 'areaServed' => ['Bénin', 'Afrique', 'International'],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     </x-slot:head>
 
@@ -69,7 +68,7 @@
                 <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Prochaine étape') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-                <h3>{{ __('Parlons de votre projet : premier échange gratuit et sans engagement.') }}</h3>
+                <h2>{{ __('Parlons de votre projet : premier échange gratuit et sans engagement.') }}</h2>
             </a>
         </div>
     </section>

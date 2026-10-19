@@ -13,7 +13,7 @@ use Illuminate\View\View;
 class LegalController extends Controller
 {
     /** Date de la dernière révision des textes, affichée en tête de page. */
-    public const UPDATED_AT = '2026-10-14';
+    public const UPDATED_AT = '2026-10-19';
 
     public function notice(): View
     {

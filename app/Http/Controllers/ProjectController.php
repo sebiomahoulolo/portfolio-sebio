@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\ProfileSetting;
 use App\Models\Project;
 use App\Models\Technology;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -36,13 +37,13 @@ class ProjectController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $slug): View
+    public function show(Request $request, string $slug): View|RedirectResponse
     {
         // Les brouillons, contenus programmés et projets supprimés restent introuvables.
-        $project = Project::published()
-            ->where('slug', $slug)
-            ->with(['technologies', 'images'])
-            ->firstOrFail();
+        $project = $this->findLocalized(Project::published()->with(['technologies', 'images']), $slug, 'projects.show');
+        if ($project instanceof RedirectResponse) {
+            return $project;
+        }
 
         // Une seule consultation comptée par projet et par session.
         $viewed = $request->session()->get('viewed_projects', []);
@@ -51,7 +52,7 @@ class ProjectController extends Controller
             $request->session()->put('viewed_projects', [...$viewed, $project->id]);
         }
 
-        $ordered = Project::published()->orderByDesc('is_featured')->orderBy('sort_order')->get(['id', 'slug', 'title']);
+        $ordered = Project::published()->orderByDesc('is_featured')->orderBy('sort_order')->get(['id', 'slug', 'slug_en', 'title']);
         $position = $ordered->search(fn ($p) => $p->id === $project->id);
 
         return view('site.projects.show', [

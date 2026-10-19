@@ -38,7 +38,9 @@ if (! function_exists('alternate_url')) {
             return lroute('home', [], $locale);
         }
 
-        $url = lroute($name, $route->parameters(), $locale);
+        // Contenu à adresse traduite : chaque langue a son propre slug (voir Controller::findLocalized).
+        $parameters = request()->attributes->get('localized_parameters')[$locale] ?? $route->parameters();
+        $url = lroute($name, $parameters, $locale);
         $query = request()->getQueryString();
 
         return $query ? "{$url}?{$query}" : $url;
@@ -54,5 +56,38 @@ if (! function_exists('media_url')) {
     function media_url(?string $path): ?string
     {
         return filled($path) ? asset('storage/'.ltrim($path, '/')) : null;
+    }
+}
+
+if (! function_exists('meta_description')) {
+    /**
+     * Description pour Google (150 à 160 caractères conseillés) : un texte trop
+     * court est complété par une phrase de contexte, un texte trop long est
+     * coupé entre deux mots.
+     */
+    function meta_description(?string $text, string $complement = ''): string
+    {
+        $text = trim(preg_replace('/\s+/u', ' ', strip_tags((string) $text)));
+
+        if ($complement !== '' && mb_strlen($text) < 110) {
+            $text = $text === '' ? $complement : rtrim($text, ' .').'. '.$complement;
+        }
+
+        return \Illuminate\Support\Str::limit($text, 157, '…', preserveWords: true);
+    }
+}
+
+if (! function_exists('json_ld')) {
+    /**
+     * Données structurées Schema.org prêtes à placer dans une balise JSON-LD.
+     * La clé « @context » est ajoutée ici : écrite dans une vue, Blade la prend
+     * pour sa directive @context et casse le JSON.
+     */
+    function json_ld(array $data): string
+    {
+        return json_encode(
+            ['@'.'context' => 'https://schema.org'] + $data,
+            JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG
+        );
     }
 }

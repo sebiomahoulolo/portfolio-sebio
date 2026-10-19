@@ -12,26 +12,25 @@
 @endphp
 
 <x-layouts.site :profile="$profile"
-    :title="($project->translate('seo_title') ?: $title).' — '.$profile->name"
-    :description="$project->translate('seo_description') ?: $project->translate('excerpt')"
+    :title="($project->translate('seo_title') ?: __(':project : étude de cas', ['project' => $title])).' — '.$profile->name"
+    :description="meta_description($project->translate('seo_description') ?: $project->translate('excerpt'), __('Étude de cas de :name : contexte, solution technique et technologies utilisées.', ['name' => $profile->name]))"
     :image="$project->coverUrl()"
     :indexable="$project->is_indexable"
-    :breadcrumbs="[__('Projets') => lroute('projects.index'), $title => lroute('projects.show', ['slug' => $project->slug])]"
+    :breadcrumbs="[__('Projets') => lroute('projects.index'), $title => lroute('projects.show', ['slug' => $project->slugFor()])]"
     type="article">
 
     <x-slot:head>
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'CreativeWork',
                 'name' => $title,
                 'description' => $project->translate('excerpt'),
-                'url' => lroute('projects.show', ['slug' => $project->slug]),
+                'url' => lroute('projects.show', ['slug' => $project->slugFor()]),
                 'image' => $project->coverUrl(),
                 'creator' => ['@type' => 'Person', 'name' => $profile->name, 'url' => lroute('home')],
                 'keywords' => $project->technologies->pluck('name')->join(', '),
                 'datePublished' => $project->published_at?->toAtomString(),
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     </x-slot:head>
 
@@ -63,7 +62,7 @@
 
             @if ($project->coverUrl())
                 <div class="tile tile-flat cover-tile span-4 reveal">
-                    <img src="{{ $project->coverUrl() }}" alt="{{ $project->translate('cover_alt') ?? $title }}" width="1600" height="800">
+                    <img src="{{ $project->coverUrl() }}" alt="{{ $project->translate('cover_alt') ?: $title }}" width="1600" height="800">
                 </div>
             @endif
         </div>
@@ -138,12 +137,12 @@
                 <i class="fas fa-handshake watermark" aria-hidden="true"></i>
                 <span class="tile-label"><i class="fas fa-handshake" aria-hidden="true"></i> {{ __('Un projet similaire ?') }}</span>
                 <span class="tile-corner" aria-hidden="true"><i class="fas fa-arrow-right"></i></span>
-                <h3>{{ __('Découvrez mes services') }}</h3>
+                <h2>{{ __('Découvrez mes services') }}</h2>
             </a>
 
             @foreach ($project->images as $image)
                 <figure class="tile tile-flat gallery-tile span-2 reveal" style="margin: 0; --delay: {{ ($loop->index % 2) * 0.06 }}s">
-                    <img src="{{ $image->url() }}" alt="{{ $image->translate('alt') ?? $title }}" loading="lazy" width="1600" height="1000">
+                    <img src="{{ $image->url() }}" alt="{{ $image->translate('alt') ?: $title }}" loading="lazy" width="1600" height="1000">
                     @if ($image->translate('alt'))<figcaption>{{ $image->translate('alt') }}</figcaption>@endif
                 </figure>
             @endforeach
@@ -152,12 +151,12 @@
         @if ($previous || $next)
             <div class="container bento" style="margin-top: var(--gap);">
                 @if ($previous)
-                    <a href="{{ lroute('projects.show', ['slug' => $previous->slug]) }}" @class(['tile pager-tile reveal', 'span-2' => $next, 'span-4' => ! $next])>
+                    <a href="{{ lroute('projects.show', ['slug' => $previous->slugFor()]) }}" @class(['tile pager-tile reveal', 'span-2' => $next, 'span-4' => ! $next])>
                         <small>← {{ __('Projet précédent') }}</small><strong>{{ $previous->translate('title') }}</strong>
                     </a>
                 @endif
                 @if ($next)
-                    <a href="{{ lroute('projects.show', ['slug' => $next->slug]) }}" @class(['tile pager-tile next reveal', 'span-2' => $previous, 'span-4' => ! $previous])>
+                    <a href="{{ lroute('projects.show', ['slug' => $next->slugFor()]) }}" @class(['tile pager-tile next reveal', 'span-2' => $previous, 'span-4' => ! $previous])>
                         <small>{{ __('Projet suivant') }} →</small><strong>{{ $next->translate('title') }}</strong>
                     </a>
                 @endif

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use App\Models\ProfileSetting;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
@@ -29,9 +30,12 @@ class BlogController extends Controller
         ]);
     }
 
-    public function show(Request $request, string $slug): View
+    public function show(Request $request, string $slug): View|RedirectResponse
     {
-        $post = Post::published()->where('slug', $slug)->firstOrFail();
+        $post = $this->findLocalized(Post::published(), $slug, 'blog.show');
+        if ($post instanceof RedirectResponse) {
+            return $post;
+        }
 
         $viewed = $request->session()->get('viewed_posts', []);
         if (! in_array($post->id, $viewed, true)) {

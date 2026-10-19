@@ -50,6 +50,8 @@ class ContactRequest extends FormRequest
             'locale' => ['nullable', Rule::in(array_keys(config('portfolio.locales')))],
             // Piège à robots : champ invisible qui doit rester vide.
             'website' => ['present', 'max:0'],
+            // Horodatage chiffré de l'affichage du formulaire, contrôlé dans le contrôleur.
+            'started_at' => ['nullable', 'string', 'max:500'],
         ];
     }
 

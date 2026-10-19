@@ -108,6 +108,7 @@
                         <label for="c-website">{{ __('Ne pas remplir') }}</label>
                         <input id="c-website" name="website" type="text" value="" tabindex="-1" autocomplete="off">
                     </div>
+                    <input type="hidden" name="started_at" value="{{ \Illuminate\Support\Facades\Crypt::encryptString((string) now()->timestamp) }}">
                 </div>
 
                 <div class="form-footer">

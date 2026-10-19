@@ -47,6 +47,7 @@
                 <flux:switch wire:model="form.is_published" label="Visible sur le site" align="left" />
                 <flux:input wire:model="form.sort_order" type="number" min="0" label="Ordre d'affichage" />
                 <flux:input wire:model.blur="form.slug" label="Adresse (slug)" placeholder="Générée à partir du titre" description="/services/{{ $form['slug'] ?: '...' }}" />
+                <flux:input wire:model.blur="form.slug_en" label="Adresse anglaise (slug)" placeholder="Générée à partir du titre anglais" description="/en/services/{{ ($form['slug_en'] ?? '') ?: ($form['slug'] ?: '...') }}" />
             </flux:card>
             <flux:card class="flex flex-col gap-5">
                 <flux:heading>Affichage</flux:heading>

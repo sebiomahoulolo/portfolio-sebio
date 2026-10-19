@@ -53,6 +53,7 @@
                 </flux:select>
                 <flux:input wire:model="form.published_at" type="datetime-local" label="Date de publication" description="Vide : maintenant. Une date future programme l'article." />
                 <flux:input wire:model.blur="form.slug" label="Adresse (slug)" placeholder="Générée à partir du titre" description="/blog/{{ $form['slug'] ?: '...' }}" />
+                <flux:input wire:model.blur="form.slug_en" label="Adresse anglaise (slug)" placeholder="Générée à partir du titre anglais" description="/en/blog/{{ ($form['slug_en'] ?? '') ?: ($form['slug'] ?: '...') }}" />
                 <flux:input wire:model="tags" label="Thèmes" placeholder="Laravel, Sécurité, SaaS" description="Séparés par des virgules." />
             </flux:card>
 

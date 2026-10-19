@@ -1,6 +1,6 @@
 @php
     $title = $post->translate('title');
-    $url = lroute('blog.show', ['slug' => $post->slug]);
+    $url = lroute('blog.show', ['slug' => $post->slugFor()]);
     $shareText = rawurlencode($title);
     $shareUrl = rawurlencode($url);
 @endphp
@@ -16,8 +16,7 @@
 
     <x-slot:head>
         <script type="application/ld+json">
-            {!! json_encode([
-                '@context' => 'https://schema.org',
+            {!! json_ld([
                 '@type' => 'BlogPosting',
                 'headline' => $title,
                 'description' => $post->translate('excerpt'),
@@ -28,7 +27,7 @@
                 'inLanguage' => app()->getLocale(),
                 'keywords' => implode(', ', $post->tags ?? []),
                 'author' => ['@type' => 'Person', 'name' => $profile->name, 'url' => lroute('home')],
-            ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG) !!}
+            ]) !!}
         </script>
     </x-slot:head>
 
@@ -43,14 +42,14 @@
                 <h1 style="max-width: 24ch;">{{ $title }}</h1>
                 @if ($post->translate('excerpt'))<p class="lead">{{ $post->translate('excerpt') }}</p>@endif
                 <div class="post-meta" style="margin-top: 22px;">
-                    <span><img src="{{ $profile->photoUrl() }}" alt="" class="author-chip"> {{ $profile->name }}</span>
+                    <span><img src="{{ $profile->photoUrl() }}" alt="" class="author-chip" width="26" height="26"> {{ $profile->name }}</span>
                     <span><i class="far fa-calendar" aria-hidden="true"></i> {{ $post->published_at->translatedFormat('d F Y') }}</span>
                     <span><i class="far fa-clock" aria-hidden="true"></i> {{ trans_choice(':count min de lecture|:count min de lecture', $post->readingMinutes()) }}</span>
                 </div>
             </div>
             @if ($post->coverUrl())
                 <div class="tile tile-flat cover-tile span-4 reveal">
-                    <img src="{{ $post->coverUrl() }}" alt="" width="1600" height="800">
+                    <img src="{{ $post->coverUrl() }}" alt="{{ $title }}" width="1600" height="800">
                 </div>
             @endif
         </div>

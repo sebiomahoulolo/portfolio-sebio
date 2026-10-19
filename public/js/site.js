@@ -374,6 +374,73 @@ function init(signal) {
         signal.addEventListener('abort', flush);
     })();
 
+    /* ---------- Consentement Google Analytics ---------- */
+    // Google Analytics n'est chargé qu'après un clic sur « Accepter ». Le choix
+    // est mémorisé dans le navigateur et peut être changé depuis le pied de page.
+    (function () {
+        var banner = document.querySelector('.consent-banner');
+        if (!banner) return;
+        var id = banner.getAttribute('data-ga');
+        var key = 'analytics-consent';
+        var read = function () { try { return localStorage.getItem(key); } catch (e) { return null; } };
+        var save = function (value) { try { localStorage.setItem(key, value); } catch (e) { /* stockage indisponible */ } };
+
+        var loadAnalytics = function () {
+            if (window.__gaLoaded) return;
+            window.__gaLoaded = true;
+            window.dataLayer = window.dataLayer || [];
+            window.gtag = function () { window.dataLayer.push(arguments); };
+            window.gtag('js', new Date());
+            window.gtag('config', id);
+            var script = document.createElement('script');
+            script.async = true;
+            script.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(id);
+            document.head.appendChild(script);
+        };
+
+        // Retrait du consentement : on supprime les cookies _ga déjà déposés.
+        var clearCookies = function () {
+            var domains = ['', location.hostname, '.' + location.hostname.replace(/^www\./, '')];
+            document.cookie.split(';').forEach(function (c) {
+                var name = c.split('=')[0].trim();
+                if (name.indexOf('_ga') !== 0) return;
+                domains.forEach(function (d) {
+                    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/' + (d ? '; domain=' + d : '');
+                });
+            });
+        };
+
+        var show = function () {
+            banner.hidden = false;
+            requestAnimationFrame(function () { banner.classList.add('is-visible'); });
+        };
+        var hide = function () {
+            banner.classList.remove('is-visible');
+            setTimeout(function () { banner.hidden = true; }, 300);
+        };
+
+        var choice = read();
+        if (choice === 'granted') loadAnalytics();
+        else if (choice !== 'denied') show();
+
+        banner.querySelector('[data-consent-accept]').addEventListener('click', function () {
+            save('granted');
+            loadAnalytics();
+            hide();
+        });
+        banner.querySelector('[data-consent-refuse]').addEventListener('click', function () {
+            var wasLoaded = window.__gaLoaded;
+            save('denied');
+            clearCookies();
+            hide();
+            // Google Analytics déjà chargé : seul un rechargement l'arrête.
+            if (wasLoaded) location.reload();
+        });
+        document.querySelectorAll('[data-consent-open]').forEach(function (button) {
+            button.addEventListener('click', show);
+        });
+    })();
+
     /* ---------- Protection du contenu ---------- */
     // Bloque clic droit, copie, sélection, glisser d'images et raccourcis
     // d'inspection, avec une notification discrète au lieu d'une alerte.

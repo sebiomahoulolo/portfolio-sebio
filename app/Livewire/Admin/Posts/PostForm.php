@@ -69,7 +69,7 @@ class PostForm extends Component
         if ($post?->exists) {
             $this->authorize('update', $post);
             $this->postId = $post->id;
-            $this->form = $post->only(['slug', 'is_indexable']);
+            $this->form = $post->only(['slug', 'slug_en', 'is_indexable']);
             foreach (self::TRANSLATED as $field) {
                 $this->form[$field] = array_merge($locales, $post->{$field} ?? []);
             }
@@ -78,7 +78,7 @@ class PostForm extends Component
             $this->tags = implode(', ', $post->tags ?? []);
         } else {
             $this->authorize('create', Post::class);
-            $this->form = ['slug' => '', 'is_indexable' => true, 'status' => PublicationStatus::Draft->value, 'published_at' => null];
+            $this->form = ['slug' => '', 'slug_en' => '', 'is_indexable' => true, 'status' => PublicationStatus::Draft->value, 'published_at' => null];
             foreach (self::TRANSLATED as $field) {
                 $this->form[$field] = $locales;
             }
@@ -99,18 +99,19 @@ class PostForm extends Component
             'form.seo_title.*' => ['nullable', 'string', 'max:70'],
             'form.seo_description.*' => ['nullable', 'string', 'max:160'],
             'form.slug' => ['required', 'alpha_dash:ascii', 'max:160', Rule::unique('posts', 'slug')->ignore($this->postId)],
+            'form.slug_en' => ['nullable', 'alpha_dash:ascii', 'max:160', Rule::unique('posts', 'slug_en')->ignore($this->postId)],
             'form.status' => ['required', new Enum(PublicationStatus::class)],
             'form.published_at' => ['nullable', 'date'],
             'form.is_indexable' => ['boolean'],
             'tags' => ['nullable', 'string', 'max:300'],
             'cover' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:4096'],
-        ], [], ['form.title.fr' => 'titre (FR)', 'form.slug' => 'slug', 'cover' => 'image de couverture']);
+        ], [], ['form.title.fr' => 'titre (FR)', 'form.slug' => 'slug', 'form.slug_en' => 'adresse anglaise', 'cover' => 'image de couverture']);
 
         $post = $this->postId ? Post::findOrFail($this->postId) : new Post;
         $this->authorize($post->exists ? 'update' : 'create', $post->exists ? $post : Post::class);
 
         $data = collect($this->form)
-            ->only(['slug', 'is_indexable', ...self::TRANSLATED])
+            ->only(['slug', 'slug_en', 'is_indexable', ...self::TRANSLATED])
             ->map(fn ($value) => is_array($value) ? array_filter($value, fn ($v) => filled($v)) : (blank($value) ? null : $value))
             ->all();
         $data['is_indexable'] = (bool) $this->form['is_indexable'];

@@ -22,6 +22,8 @@
                 <x-admin.translated-field model="form.title" label="Titre" required />
                 <flux:input wire:model.blur="form.slug" label="Adresse (slug)" placeholder="Générée automatiquement à partir du titre"
                     description="Utilisée dans l'URL : /projets/{{ $form['slug'] ?: '...' }}" />
+                <flux:input wire:model.blur="form.slug_en" label="Adresse anglaise (slug)" placeholder="Générée à partir du titre anglais"
+                    description="/en/projects/{{ ($form['slug_en'] ?? '') ?: ($form['slug'] ?: '...') }} — à ne plus changer une fois publiée." />
                 <div class="grid gap-4 sm:grid-cols-3">
                     <div>
                         <flux:input wire:model="form.category" label="Catégorie" list="project-categories" placeholder="Plateforme web" />

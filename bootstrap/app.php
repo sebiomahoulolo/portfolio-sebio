@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\RedirectToCanonicalHost;
 use App\Http\Middleware\SecurityHeaders;
 use App\Http\Middleware\SetLocale;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // aux en-têtes X-Forwarded-* pour détecter correctement HTTPS et l'IP.
         $middleware->trustProxies(at: '*');
 
+        $middleware->append(RedirectToCanonicalHost::class);
         $middleware->append(SecurityHeaders::class);
 
         $middleware->alias(['locale' => SetLocale::class]);
